@@ -1,5 +1,4 @@
 # gobee - A Go XBee Library
-<hr>
 
 [![Build Status](https://travis-ci.org/pauleyj/gobee.svg?branch=master)](https://travis-ci.org/pauleyj/gobee)
 
