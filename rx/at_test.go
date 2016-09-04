@@ -15,8 +15,8 @@ func Test_at_command_response(t *testing.T) {
 		0x64, 0x69, 0x6e, 0x61,
 		0x74, 0x6f, 0x72, 0xe5}
 
-	rxf := newATCommandResponse()
-	f, ok := rxf.(*ATCommandResponse)
+	rxf := newAT()
+	f, ok := rxf.(*AT)
 	if !ok {
 		t.Error("Failed type assertion")
 	}

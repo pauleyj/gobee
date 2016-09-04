@@ -5,12 +5,12 @@ import "testing"
 const unknown_api_id byte = 0x00
 
 func TestNewRxFrameForApiId(t *testing.T) {
-	rxf, err := NewRxFrameForApiId(XBEE_API_ID_AT_COMMAND_RESPONSE)
+	rxf, err := NewRxFrameForApiId(XBEE_API_ID_RX_AT)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
 
-	_, ok := rxf.(*ATCommandResponse)
+	_, ok := rxf.(*AT)
 	if !ok {
 		t.Error("Failed type assertion ATCommandResponse")
 	}

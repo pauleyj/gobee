@@ -1,47 +1,53 @@
 package gobee_test
 
 import (
-	"fmt"
 	"testing"
 	"github.com/pauleyj/gobee"
 	"github.com/pauleyj/gobee/rx"
 )
 
-type Transmitter struct{}
+type Transmitter struct{
+	t *testing.T
+	expected []byte
+}
 
 func (xm *Transmitter) Write(p []byte) (n int, err error) {
-	fmt.Printf("tx <-- %v\n", p)
 	return len(p), nil
+}
+
+func (xm *Transmitter) SetExpectedWriteBytes(expected []byte) {
+	xm.expected = expected
 }
 
 type Receiver struct {
 	t *testing.T
 }
 
+
+
 func (r *Receiver) RxFrameReceiver(f rx.RxFrame) error {
 	switch f.(type) {
-	case *rx.ATCommandResponse:
-		validateAtCommandResponse(r.t, f.(*rx.ATCommandResponse))
+	case *rx.AT:
+		validateAT(r.t, f.(*rx.AT))
 
 	}
 
 	return nil
 }
 
-func validateAtCommandResponse(t *testing.T, f *rx.ATCommandResponse) {
-	fmt.Printf("%v\n", f)
+func validateAT(t *testing.T, f *rx.AT) {
 	if f.FrameId != 1 {
-		t.Errorf("Expected FrameId: 0x01, but got 0x%02X", f.FrameId)
+		t.Errorf("Expected FrameId: 0x01, but got 0x%02x", f.FrameId)
 	}
 }
 
-func TestXBee_RX_AT_Command_Response(t *testing.T) {
+func TestXBee_RX_AT(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
 	xbee := gobee.NewXBee(transmitter, receiver)
 	xbee.SetApiMode(2)
 
-	// at command response
+	// a valid AT command response
 	response := []byte{
 		0x7e, 0x00, 0x18, 0x88,
 		0x01, 0x4e, 0x49, 0x00,
@@ -59,13 +65,13 @@ func TestXBee_RX_AT_Command_Response(t *testing.T) {
 	}
 }
 
-func TestXBee_RX_AT_Command_Response_Escape(t *testing.T) {
+func TestXBee_RX_AT_Escape(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
 	x := gobee.NewXBee(transmitter, receiver)
 	x.SetApiMode(2)
 
-	// at command response
+	// a valid AT command response with escaped bytes
 	response := []byte{
 		0x7e, 0x00, 0x06, 0x88,
 		0x01, 0x4e, 0x49, 0x00,

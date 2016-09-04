@@ -17,6 +17,7 @@ const XBEE_VALID_FRAME_CHECKSUM byte = 0xFF
 const ESC byte = 0x7D
 const XON byte = 0x11
 const XOFF byte = 0x13
+const ESC_CHAR = 0x20
 
 /*
  * Address constants
@@ -87,7 +88,7 @@ func (x *XBee) RX(b byte) error {
 
 		if x.escapeNext {
 			x.escapeNext = false
-			b ^= 0x20
+			b = escape(b)
 		}
 	}
 
@@ -123,11 +124,11 @@ func (x *XBee) TX(frame tx.TxFrame) (n int, err error) {
 	ll := byte(len & 0x00FF)
 	if x.isApiEscapeModeEnabled() {
 		if shouldEscape(lh) {
-			lh ^= 0x20
+			lh = escape(lh)
 			b.WriteByte(ESC)
 		}
 		if shouldEscape(ll) {
-			ll ^= 0x20
+			ll = escape(ll)
 			b.WriteByte(ESC)
 		}
 	}
@@ -139,7 +140,7 @@ func (x *XBee) TX(frame tx.TxFrame) (n int, err error) {
 		checksum += i
 
 		if x.isApiEscapeModeEnabled() && shouldEscape(i) {
-			i ^= 0x20
+			i = escape(i)
 			b.WriteByte(ESC)
 		}
 
@@ -150,7 +151,7 @@ func (x *XBee) TX(frame tx.TxFrame) (n int, err error) {
 
 	// checksum is escaped if needed
 	if x.apiMode == 2 && shouldEscape(checksum) {
-		checksum ^= 0x20
+		checksum = escape(checksum)
 		b.WriteByte(ESC)
 	}
 	b.WriteByte(checksum)
@@ -176,7 +177,7 @@ func shouldEscape(b byte) bool {
 }
 
 func escape(b byte) byte {
-	return (b ^ 0x20)
+	return (b ^ ESC_CHAR)
 }
 
 func (x *XBee) isApiEscapeModeEnabled() bool {

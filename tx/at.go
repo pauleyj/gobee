@@ -4,13 +4,13 @@ import "bytes"
 
 const api_id_at byte = 0x08
 
-type ATCommand struct {
+type AT struct {
 	ID        byte
 	Command   [2]byte
 	Parameter []byte
 }
 
-func (f *ATCommand) Bytes() []byte {
+func (f *AT) Bytes() []byte {
 	var b bytes.Buffer
 
 	b.WriteByte(api_id_at)

@@ -1,6 +1,6 @@
 package rx
 
-const XBEE_API_ID_AT_COMMAND_RESPONSE byte = 0x88
+const XBEE_API_ID_RX_AT byte = 0x88
 const at_command_length byte = 2
 
 const (
@@ -10,7 +10,7 @@ const (
 	at_state_frame_command_data = rx_frame_state(iota)
 )
 
-type ATCommandResponse struct {
+type AT struct {
 	state   rx_frame_state
 	index   byte
 	FrameId byte
@@ -19,13 +19,13 @@ type ATCommandResponse struct {
 	Data    []byte
 }
 
-func newATCommandResponse() RxFrame {
-	return &ATCommandResponse{
+func newAT() RxFrame {
+	return &AT{
 		state:   at_state_frame_id,
 	}
 }
 
-func (f *ATCommandResponse) RX(b byte) error {
+func (f *AT) RX(b byte) error {
 	var err error
 
 	switch f.state {
@@ -42,14 +42,14 @@ func (f *ATCommandResponse) RX(b byte) error {
 	return err
 }
 
-func (f *ATCommandResponse) stateId(b byte) error {
+func (f *AT) stateId(b byte) error {
 	f.FrameId = b
 	f.state = at_state_frame_command_at
 
 	return nil
 }
 
-func (f *ATCommandResponse) stateCommand(b byte) error {
+func (f *AT) stateCommand(b byte) error {
 	f.Command[f.index] = b
 	f.index++
 	if f.index == at_command_length {
@@ -58,14 +58,14 @@ func (f *ATCommandResponse) stateCommand(b byte) error {
 	return nil
 }
 
-func (f *ATCommandResponse) stateStatus(b byte) error {
+func (f *AT) stateStatus(b byte) error {
 	f.Status = b
 	f.state = at_state_frame_command_data
 
 	return nil
 }
 
-func (f *ATCommandResponse) stateData(b byte) error {
+func (f *AT) stateData(b byte) error {
 	if f.Data == nil {
 		f.Data = make([]byte, 0)
 	}

@@ -2,7 +2,7 @@ package rx
 
 import "errors"
 
-// frameFactory private type that defines a function returning an RxFrame
+// defines a function returning an RxFrame
 type FrameFactory func() RxFrame
 
 var (
@@ -13,7 +13,7 @@ var (
 
 func init() {
 	// AT command response
-	rxFrameFactory[XBEE_API_ID_AT_COMMAND_RESPONSE] = newATCommandResponse
+	rxFrameFactory[XBEE_API_ID_RX_AT] = newAT
 	rxFrameFactory[XBEE_API_ID_RX_ZB] = newRX_ZB
 }
 
