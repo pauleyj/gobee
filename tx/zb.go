@@ -4,7 +4,7 @@ import "bytes"
 
 const api_id_tx_zb byte = 0x10
 
-type TX_ZB struct {
+type ZB struct {
 	ID              byte
 	DestAddr64      uint64
 	DestAddr16      uint16
@@ -13,7 +13,7 @@ type TX_ZB struct {
 	Data            []byte
 }
 
-func (f *TX_ZB) Bytes() []byte {
+func (f *ZB) Bytes() []byte {
 	b := new(bytes.Buffer)
 
 	b.WriteByte(api_id_tx_zb)

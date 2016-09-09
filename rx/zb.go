@@ -9,7 +9,7 @@ const (
 	rx_zb_data = rx_frame_state(iota)
 )
 
-type RX_ZB struct {
+type ZB struct {
 	state rx_frame_state
 	index byte
 	Addr64 uint64
@@ -18,13 +18,13 @@ type RX_ZB struct {
 	Data []byte
 }
 
-func newRX_ZB() RxFrame {
-	return &RX_ZB{
+func newZB() RxFrame {
+	return &ZB{
 		state: rx_zb_addr64,
 	}
 }
 
-func (f *RX_ZB) RX(b byte) error {
+func (f *ZB) RX(b byte) error {
 	var err error
 
 	switch f.state {
@@ -41,8 +41,8 @@ func (f *RX_ZB) RX(b byte) error {
 	return err
 }
 
-func stateAddr64(f *RX_ZB, b byte) error  {
-	f.Addr64 += uint64(b << (56 - (8 * f.index)))
+func stateAddr64(f *ZB, b byte) error  {
+	f.Addr64 += uint64(b) << (56 - (8 * f.index))
 	f.index++
 
 	if f.index == 8 {
@@ -53,8 +53,8 @@ func stateAddr64(f *RX_ZB, b byte) error  {
 	return nil
 }
 
-func stateAddr16(f *RX_ZB, b byte) error {
-	f.Addr16 += uint16(b << (8 - (8 * f.index)))
+func stateAddr16(f *ZB, b byte) error {
+	f.Addr16 += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
@@ -66,14 +66,14 @@ func stateAddr16(f *RX_ZB, b byte) error {
 
 }
 
-func stateOptions(f *RX_ZB, b byte) error {
+func stateOptions(f *ZB, b byte) error {
 	f.Options = b
 	f.state = rx_zb_data
 
 	return nil
 }
 
-func stateData(f *RX_ZB, b byte) error {
+func stateData(f *ZB, b byte) error {
 	if f.Data == nil {
 		f.Data = make([]byte, 0)
 	}

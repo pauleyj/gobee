@@ -14,7 +14,7 @@ var (
 func init() {
 	// AT command response
 	rxFrameFactory[XBEE_API_ID_RX_AT] = newAT
-	rxFrameFactory[XBEE_API_ID_RX_ZB] = newRX_ZB
+	rxFrameFactory[XBEE_API_ID_RX_ZB] = newZB
 }
 
 // NewRxFrameForApiId creates an appropriate RxFrame for the given API ID
