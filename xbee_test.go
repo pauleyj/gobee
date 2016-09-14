@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/pauleyj/gobee"
 	"github.com/pauleyj/gobee/rx"
+	"github.com/pauleyj/gobee/tx"
 )
 
 type Transmitter struct{
@@ -38,6 +39,78 @@ func (r *Receiver) RxFrameReceiver(f rx.RxFrame) error {
 func validateAT(t *testing.T, f *rx.AT) {
 	if f.FrameId != 1 {
 		t.Errorf("Expected FrameId: 0x01, but got 0x%02x", f.FrameId)
+	}
+}
+
+func TestXBee_TX_AT(t *testing.T) {
+	transmitter := &Transmitter{}
+	receiver := &Receiver{t: t}
+	xbee := gobee.NewXBee(transmitter, receiver)
+
+	var at = &tx.AT{
+		ID: 0x01,
+		Parameter: []byte{0x00},
+	}
+	_, err := xbee.TX(at)
+	if err == nil {
+		t.Error("Expected error, but got none")
+	}
+
+	at = &tx.AT{
+		ID: 0x01,
+		Command: []byte{'N','I'},
+		Parameter: []byte{0x00},
+	}
+	_, err = xbee.TX(at)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	at = &tx.AT{
+		ID: 0x01,
+		Command: []byte{'N','I'},
+		Parameter: []byte{0x11},
+	}
+	xbee.SetApiMode(2)
+	_, err = xbee.TX(at)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+}
+
+func TestXBee_TX_AT_QUEUE(t *testing.T) {
+	transmitter := &Transmitter{}
+	receiver := &Receiver{t: t}
+	xbee := gobee.NewXBee(transmitter, receiver)
+
+	var at = &tx.AT_QUEUE{
+		ID: 0x01,
+		Parameter: []byte{0x00},
+	}
+	_, err := xbee.TX(at)
+	if err == nil {
+		t.Error("Expected error, but got none")
+	}
+
+	at = &tx.AT_QUEUE{
+		ID: 0x01,
+		Command: []byte{'N','I'},
+		Parameter: []byte{0x00},
+	}
+	_, err = xbee.TX(at)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	at = &tx.AT_QUEUE{
+		ID: 0x01,
+		Command: []byte{'N','I'},
+		Parameter: []byte{0x11},
+	}
+	xbee.SetApiMode(2)
+	_, err = xbee.TX(at)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
 	}
 }
 

@@ -5,21 +5,21 @@ import (
 	"errors"
 )
 
-const api_id_at byte = 0x08
+const api_id_at_queue byte = 0x09
 
-type AT struct {
+type AT_QUEUE struct {
 	ID        byte
 	Command   []byte
 	Parameter []byte
 }
 
-func (f *AT) Bytes() ([]byte, error) {
+func (f *AT_QUEUE) Bytes() ([]byte, error) {
 	if len(f.Command) != 2 {
 		return nil, errors.New("Invalid AT command")
 	}
 
 	var b bytes.Buffer
-	b.WriteByte(api_id_at)
+	b.WriteByte(api_id_at_queue)
 	b.WriteByte(f.ID)
 	b.Write(f.Command)
 

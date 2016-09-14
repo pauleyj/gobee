@@ -111,17 +111,20 @@ func (x *XBee) RX(b byte) error {
 }
 
 
-func (x *XBee) TX(frame tx.TxFrame) (n int, err error) {
-	f := frame.Bytes()
+func (x *XBee) TX(frame tx.TxFrame) (int, error) {
+	f, err := frame.Bytes()
+	if err != nil {
+		return 0, err
+	}
 
 	var b bytes.Buffer
 	var checksum byte = 0
-	len := len(f)
+	l := len(f)
 
 	b.WriteByte(FRAME_DELIMITER)
 
-	lh := byte(len >> 8)
-	ll := byte(len & 0x00FF)
+	lh := byte(l >> 8)
+	ll := byte(l & 0x00FF)
 	if x.isApiEscapeModeEnabled() {
 		if shouldEscape(lh) {
 			lh = escape(lh)

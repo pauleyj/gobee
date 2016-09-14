@@ -1,5 +1,5 @@
 package tx
 
 type TxFrame interface {
-	Bytes() []byte
+	Bytes() ([]byte, error)
 }

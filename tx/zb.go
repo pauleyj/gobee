@@ -6,28 +6,28 @@ const api_id_tx_zb byte = 0x10
 
 type ZB struct {
 	ID              byte
-	DestAddr64      uint64
-	DestAddr16      uint16
+	Addr64          uint64
+	Addr16          uint16
 	BroadcastRadius byte
 	Options         byte
 	Data            []byte
 }
 
-func (f *ZB) Bytes() []byte {
+func (f *ZB) Bytes() ([]byte, error) {
 	b := new(bytes.Buffer)
 
 	b.WriteByte(api_id_tx_zb)
 	b.WriteByte(f.ID)
-	b.WriteByte(byte((f.DestAddr64 >> 56) & 0xFF))
-	b.WriteByte(byte((f.DestAddr64 >> 48) & 0xFF))
-	b.WriteByte(byte((f.DestAddr64 >> 40) & 0xFF))
-	b.WriteByte(byte((f.DestAddr64 >> 32) & 0xFF))
-	b.WriteByte(byte((f.DestAddr64 >> 24) & 0xFF))
-	b.WriteByte(byte((f.DestAddr64 >> 16) & 0xFF))
-	b.WriteByte(byte((f.DestAddr64 >> 8) & 0xFF))
-	b.WriteByte(byte(f.DestAddr64 & 0xFF))
-	b.WriteByte(byte((f.DestAddr16 >> 8) & 0xFF))
-	b.WriteByte(byte(f.DestAddr16 & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 56) & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 48) & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 40) & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 32) & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 24) & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 16) & 0xFF))
+	b.WriteByte(byte((f.Addr64 >> 8) & 0xFF))
+	b.WriteByte(byte(f.Addr64 & 0xFF))
+	b.WriteByte(byte((f.Addr16 >> 8) & 0xFF))
+	b.WriteByte(byte(f.Addr16 & 0xFF))
 	b.WriteByte(f.BroadcastRadius)
 	b.WriteByte(f.Options)
 
@@ -35,5 +35,5 @@ func (f *ZB) Bytes() []byte {
 		b.Write(f.Data)
 	}
 
-	return b.Bytes()
+	return b.Bytes(), nil
 }
