@@ -26,7 +26,7 @@ type Receiver struct {
 
 
 
-func (r *Receiver) RxFrameReceiver(f rx.RxFrame) error {
+func (r *Receiver) OnRxFrame(f rx.RxFrame) error {
 	switch f.(type) {
 	case *rx.AT:
 		validateAT(r.t, f.(*rx.AT))

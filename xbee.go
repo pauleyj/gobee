@@ -46,7 +46,7 @@ type XBeeTransmitter interface {
 }
 
 type XBeeReceiver interface {
-	RxFrameReceiver(rx.RxFrame) error
+	OnRxFrame(rx.RxFrame) error
 }
 
 type XBee struct {
@@ -102,7 +102,7 @@ func (x *XBee) RX(b byte) error {
 	case STATE_DATA_FRAME_CHECKSUM:
 		err = x.apiStateChecksum(b)
 		if err == nil {
-			x.receiver.RxFrameReceiver(x.rxFrame)
+			x.receiver.OnRxFrame(x.rxFrame)
 		}
 	default:
 		err = x.apiStateWaitFrameDelimiter(b)

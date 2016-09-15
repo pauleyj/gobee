@@ -29,19 +29,19 @@ func (f *ZB) RX(b byte) error {
 
 	switch f.state {
 	case rx_zb_addr64:
-		err = stateAddr64(f, b)
+		err = f.stateAddr64(b)
 	case rx_zb_addr16:
-		err = stateAddr16(f, b)
+		err = f.stateAddr16(b)
 	case rx_zb_options:
-		err = stateOptions(f, b)
+		err = f.stateOptions(b)
 	case rx_zb_data:
-		err = stateData(f, b)
+		err = f.stateData(b)
 	}
 
 	return err
 }
 
-func stateAddr64(f *ZB, b byte) error  {
+func (f *ZB) stateAddr64(b byte) error  {
 	f.Addr64 += uint64(b) << (56 - (8 * f.index))
 	f.index++
 
@@ -53,7 +53,7 @@ func stateAddr64(f *ZB, b byte) error  {
 	return nil
 }
 
-func stateAddr16(f *ZB, b byte) error {
+func (f *ZB) stateAddr16(b byte) error {
 	f.Addr16 += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
@@ -66,14 +66,14 @@ func stateAddr16(f *ZB, b byte) error {
 
 }
 
-func stateOptions(f *ZB, b byte) error {
+func (f *ZB) stateOptions(b byte) error {
 	f.Options = b
 	f.state = rx_zb_data
 
 	return nil
 }
 
-func stateData(f *ZB, b byte) error {
+func (f *ZB) stateData(b byte) error {
 	if f.Data == nil {
 		f.Data = make([]byte, 0)
 	}
