@@ -12,7 +12,7 @@ type Transmitter struct{
 	expected []byte
 }
 
-func (xm *Transmitter) Write(p []byte) (n int, err error) {
+func (xm *Transmitter) Transmit(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
@@ -26,7 +26,7 @@ type Receiver struct {
 
 
 
-func (r *Receiver) OnRxFrame(f rx.RxFrame) error {
+func (r *Receiver) Receive(f rx.RxFrame) error {
 	switch f.(type) {
 	case *rx.AT:
 		validateAT(r.t, f.(*rx.AT))

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/pauleyj/gobee/rx"
 	"github.com/pauleyj/gobee/tx"
-	"io"
 )
 
 /*
@@ -42,11 +41,11 @@ const (
 type ApiState int
 
 type XBeeTransmitter interface {
-	io.Writer
+	Transmit([]byte) (int, error)
 }
 
 type XBeeReceiver interface {
-	OnRxFrame(rx.RxFrame) error
+	Receive(rx.RxFrame) error
 }
 
 type XBee struct {
@@ -102,7 +101,7 @@ func (x *XBee) RX(b byte) error {
 	case STATE_DATA_FRAME_CHECKSUM:
 		err = x.apiStateChecksum(b)
 		if err == nil {
-			x.receiver.OnRxFrame(x.rxFrame)
+			x.receiver.Receive(x.rxFrame)
 		}
 	default:
 		err = x.apiStateWaitFrameDelimiter(b)
@@ -159,7 +158,7 @@ func (x *XBee) TX(frame tx.TxFrame) (int, error) {
 	}
 	b.WriteByte(checksum)
 
-	return x.transmitter.Write(b.Bytes())
+	return x.transmitter.Transmit(b.Bytes())
 }
 
 func (x *XBee) SetApiMode(mode byte) error {

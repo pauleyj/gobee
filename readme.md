@@ -14,7 +14,7 @@ Implement the _XBeeTransmitter_ and _XBeeReceiver_ interfaces, instantiate an XB
 
 ```golang
 type XBeeTransmitter interface {
-	io.Writer
+	Transmit([]byte) (int, error)
 }
 ```
 
@@ -24,7 +24,7 @@ gobee uses the XBeeTransmitter interface to request a byte slice be sent to the 
 
 ```golang
 type XBeeReceiver interface {
-	OnRxFrame(rx.RxFrame) error
+	Receive(rx.RxFrame) error
 }
 ```
 
@@ -48,7 +48,7 @@ When a frame is transmitted, gobee forms an appropriate API packet and sends it 
 
 ```golang
 ...
-func (tx *Transmitter) Write(buffer []byte) (n int, err error) {
+func (tx *Transmitter) Transmit(buffer []byte) (n int, err error) {
 
 	i, err := port.Write(buffer)
 	if err != nil {
@@ -80,7 +80,7 @@ for i := 0; i < n; i++ {
 Your implemented XBeeReceiver will get called when completed API frames are received.
 
 ```golang
-func (r *Receiver) OnRxFrame(f rx.RxFrame) error {
+func (r *Receiver) Receive(f rx.RxFrame) error {
 	switch f.(type) {
 	case *rx.ZB:
 		// do something with received ZB frame
