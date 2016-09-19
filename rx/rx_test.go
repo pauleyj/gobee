@@ -30,8 +30,8 @@ func Test_AT(t *testing.T) {
 		}
 	}
 
-	if f.FrameId != response[0] {
-		t.Errorf("Expected FrameId: 0x01, but got 0x%02X", f.FrameId)
+	if f.ID != response[0] {
+		t.Errorf("Expected FrameId: 0x01, but got 0x%02X", f.ID)
 	}
 
 	if !bytes.Equal(f.Command[:1], response[1:2]) {
@@ -103,6 +103,33 @@ func TestNewRxFrameForApiId(t *testing.T) {
 		t.Error("Failed type assertion ZB")
 	}
 
+	rxf, err = NewRxFrameForApiId(XBEE_API_TX_STATUS)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	_, ok = rxf.(*TX_STATUS)
+	if !ok {
+		t.Error("Failed type assertion TX_STATUS")
+	}
+
+	rxf, err = NewRxFrameForApiId(XBEE_API_ID_RX_ZB_EXPLICIT)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	_, ok = rxf.(*ZB_EXPLICIT)
+	if !ok {
+		t.Error("Failed type assertion ZB_EXPLICIT")
+	}
+
+	rxf, err = NewRxFrameForApiId(XBEE_API_ID_RX_AT_REMOTE)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	_, ok = rxf.(*AT_REMOTE)
+	if !ok {
+		t.Error("Failed type assertion AT_REMOTE")
+	}
+
 	_, err = NewRxFrameForApiId(unknown_api_id)
 	if err == nil {
 		t.Errorf("Expected error: %v, but got none", errUnknownFrameApiId)
@@ -146,6 +173,6 @@ func TestAddNewAPIFrameFactory(t *testing.T) {
 func TestAddExistingAPIFrameFactory(t *testing.T) {
 	err := AddApiFactoryForId(XBEE_API_ID_RX_AT, mockFrameFactoryFunc)
 	if err == nil {
-		t.Errorf("Expected error, but got none", err)
+		t.Error("Expected error, but got none")
 	}
 }

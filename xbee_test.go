@@ -37,8 +37,8 @@ func (r *Receiver) Receive(f rx.RxFrame) error {
 }
 
 func validateAT(t *testing.T, f *rx.AT) {
-	if f.FrameId != 1 {
-		t.Errorf("Expected FrameId: 0x01, but got 0x%02x", f.FrameId)
+	if f.ID != 1 {
+		t.Errorf("Expected FrameId: 0x01, but got 0x%02x", f.ID)
 	}
 }
 

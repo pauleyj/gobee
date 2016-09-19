@@ -8,14 +8,17 @@ type FrameFactory func() RxFrame
 var (
 	errUnknownFrameApiId = errors.New("Unknown frame API ID")
 	errFrameIdExists = errors.New("Frame factory for API ID already exists")
-	rxFrameFactory = make(map[byte]FrameFactory)
+	rxFrameFactory map[byte]FrameFactory
 )
 
 func init() {
+	rxFrameFactory = make(map[byte]FrameFactory)
 	// AT command response
 	rxFrameFactory[XBEE_API_ID_RX_AT] = newAT
 	rxFrameFactory[XBEE_API_ID_RX_ZB] = newZB
 	rxFrameFactory[XBEE_API_TX_STATUS] = newTXStatus
+	rxFrameFactory[XBEE_API_ID_RX_ZB_EXPLICIT] = newZB_EXPLICIT
+	rxFrameFactory[XBEE_API_ID_RX_AT_REMOTE] = newAT_REMOTE
 }
 
 // NewRxFrameForApiId creates an appropriate RxFrame for the given API ID

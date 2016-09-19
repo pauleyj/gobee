@@ -131,7 +131,7 @@ func Test_ZB(t *testing.T) {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
 	if len(actual) != 16 {
-		t.Errorf("Expected ZB frame to be 15 bytes in length, got: %d", len(actual))
+		t.Errorf("Expected ZB frame to be 16 bytes in length, got: %d", len(actual))
 	}
 
 	expected := []byte{api_id_tx_zb, 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
@@ -139,6 +139,39 @@ func Test_ZB(t *testing.T) {
 	for i, b := range expected {
 		if b != actual[i] {
 			t.Errorf("Expected 0x02%x, but got 0x%02x", b, actual[i])
+		}
+	}
+}
+
+func Test_ZB_EXPLICIT(t *testing.T) {
+	zb := &ZB_EXPLICIT{
+		ID: 0xFF,
+		Addr64: 0x0001020304050607,
+		Addr16: 0x0001,
+		SrcEP: 0x01,
+		DstEP: 0x02,
+		ClusterID: []byte{0x00, 0x01},
+		ProfileID: []byte{0x00, 0x01},
+		BroadcastRadius: 0xFF,
+		Options: 0xEE,
+		Data: []byte{0x00, 0x01},
+	}
+
+	actual, err := zb.Bytes()
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	if len(actual) != 22 {
+		t.Errorf("Expected ZB frame to be 16 bytes in length, got: %d", len(actual))
+	}
+
+	expected := []byte{api_id_zb_explicit, 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
+		0x06, 0x07, 0x00, 0x01,
+		0x01, 0x02, 0x00, 0x01, 0x00, 0x01,
+		0xFF, 0xEE, 0x00, 0x01}
+	for i, b := range expected {
+		if b != actual[i] {
+			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
 		}
 	}
 }

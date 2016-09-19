@@ -1,7 +1,6 @@
 package rx
 
 const XBEE_API_ID_RX_AT byte = 0x88
-const at_command_length byte = 2
 
 const (
 	at_state_frame_id = rx_frame_state(iota)
@@ -13,7 +12,7 @@ const (
 type AT struct {
 	state   rx_frame_state
 	index   byte
-	FrameId byte
+	ID      byte
 	Command [2]byte
 	Status  byte
 	Data    []byte
@@ -43,7 +42,7 @@ func (f *AT) RX(b byte) error {
 }
 
 func (f *AT) stateId(b byte) error {
-	f.FrameId = b
+	f.ID = b
 	f.state = at_state_frame_command_at
 
 	return nil
@@ -52,7 +51,7 @@ func (f *AT) stateId(b byte) error {
 func (f *AT) stateCommand(b byte) error {
 	f.Command[f.index] = b
 	f.index++
-	if f.index == at_command_length {
+	if f.index == 2 {
 		f.state = at_state_frame_command_status
 	}
 	return nil
