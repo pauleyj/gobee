@@ -2,7 +2,6 @@ package tx
 
 import (
 	"bytes"
-	"errors"
 )
 
 const api_id_zb_explicit byte = 0x11
@@ -13,21 +12,14 @@ type ZB_EXPLICIT struct {
 	Addr16          uint16
 	SrcEP           byte
 	DstEP           byte
-	ClusterID       []byte
-	ProfileID       []byte
+	ClusterID       uint16
+	ProfileID       uint16
 	BroadcastRadius byte
 	Options         byte
 	Data            []byte
 }
 
 func (f *ZB_EXPLICIT) Bytes() ([]byte, error) {
-	if len(f.ClusterID) != 2 {
-		return nil, errors.New("Invalid Cluster ID")
-	}
-	if len(f.ProfileID) != 2 {
-		return nil, errors.New("Invalid Profile ID")
-	}
-
 	b := new(bytes.Buffer)
 
 	b.WriteByte(api_id_zb_explicit)
@@ -44,8 +36,10 @@ func (f *ZB_EXPLICIT) Bytes() ([]byte, error) {
 	b.WriteByte(byte(f.Addr16 & 0xFF))
 	b.WriteByte(f.SrcEP)
 	b.WriteByte(f.DstEP)
-	b.Write(f.ClusterID)
-	b.Write(f.ProfileID)
+	b.WriteByte(byte((f.ClusterID >> 8) & 0xFF))
+	b.WriteByte(byte(f.ClusterID & 0xFF))
+	b.WriteByte(byte((f.ProfileID >> 8) & 0xFF))
+	b.WriteByte(byte(f.ProfileID & 0xFF))
 	b.WriteByte(f.BroadcastRadius)
 	b.WriteByte(f.Options)
 

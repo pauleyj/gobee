@@ -20,8 +20,8 @@ type ZB_EXPLICIT struct {
 	Addr16    uint16
 	SrcEP     byte
 	DstEP     byte
-	ClusterID [2]byte
-	ProfileID [2]byte
+	ClusterID uint16
+	ProfileID uint16
 	Options   byte
 	Data      []byte
 }
@@ -97,7 +97,7 @@ func (f *ZB_EXPLICIT) stateDstEP(b byte) error {
 }
 
 func (f *ZB_EXPLICIT) stateCID(b byte) error {
-	f.ClusterID[f.index] = b
+	f.ClusterID += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
@@ -108,7 +108,7 @@ func (f *ZB_EXPLICIT) stateCID(b byte) error {
 }
 
 func (f *ZB_EXPLICIT) statePID(b byte) error {
-	f.ProfileID[f.index] = b
+	f.ProfileID += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
