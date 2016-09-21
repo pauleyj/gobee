@@ -20,7 +20,7 @@ type TX_STATUS struct {
 	Discovery byte
 }
 
-func newTXStatus() RxFrame {
+func newTX_STATUS() RxFrame {
 	return &TX_STATUS{
 		state: tx_status_frame_id,
 	}

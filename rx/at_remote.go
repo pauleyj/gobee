@@ -25,7 +25,6 @@ type AT_REMOTE struct {
 func newAT_REMOTE() RxFrame {
 	return &AT_REMOTE{
 		state: at_remote_id,
-		Addr16: 0xFFFE,
 	}
 }
 
@@ -33,6 +32,8 @@ func (f *AT_REMOTE) RX(b byte) error {
 	var err error
 
 	switch f.state {
+	case at_remote_id:
+		err = f.stateID(b)
 	case at_remote_addr64:
 		err = f.stateAddr64(b)
 	case at_remote_addr16:
@@ -48,6 +49,12 @@ func (f *AT_REMOTE) RX(b byte) error {
 	return err
 }
 
+func (f *AT_REMOTE) stateID(b byte) error {
+	f.ID = b
+	f.state = at_remote_addr64
+
+	return nil
+}
 func (f *AT_REMOTE) stateAddr64(b byte) error {
 	f.Addr64 += uint64(b) << (56 - (8 * f.index))
 	f.index++
@@ -77,14 +84,14 @@ func (f *AT_REMOTE) stateCommand(b byte) error {
 	f.Command[f.index] = b
 	f.index++
 	if f.index == 2 {
-		f.state = at_state_frame_command_status
+		f.state = at_remote_status
 	}
 	return nil
 }
 
 func (f *AT_REMOTE) stateStatus(b byte) error {
 	f.Status = b
-	f.state = at_state_frame_command_data
+	f.state = at_remote_data
 
 	return nil
 }
