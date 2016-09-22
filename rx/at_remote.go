@@ -11,6 +11,8 @@ const (
 	at_remote_data = rx_frame_state(iota)
 )
 
+var _ RxFrame = (*AT_REMOTE)(nil)
+
 type AT_REMOTE struct {
 	state rx_frame_state
 	index byte

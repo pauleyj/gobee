@@ -9,6 +9,8 @@ const (
 	rx_zb_data = rx_frame_state(iota)
 )
 
+var _ RxFrame = (*ZB)(nil)
+
 type ZB struct {
 	state rx_frame_state
 	index byte

@@ -7,6 +7,8 @@ import (
 
 const api_id_at_queue byte = 0x09
 
+var _ TxFrame = (*AT_QUEUE)(nil)
+
 type AT_QUEUE struct {
 	ID        byte
 	Command   []byte

@@ -59,6 +59,73 @@ func Test_Valid_AT_With_Param(t *testing.T) {
 	}
 }
 
+func Test_Invalid_AT_REMOTE(t *testing.T) {
+	var at = &AT_REMOTE{
+		ID: 0x01,
+		Addr64: 0x000000000000ffff,
+		Addr16: 0xFFFE,
+		Parameter: []byte{0x01},
+	}
+
+	_, err := at.Bytes()
+	if err == nil {
+		t.Error("Expected error, but got none")
+	}
+}
+
+func Test_Valid_AT_REMOTE_No_Param(t *testing.T) {
+	at := &AT_REMOTE{
+		ID: 0x01,
+		Addr64: 0x000000000000FFFF,
+		Addr16: 0xFFFE,
+		Options: 0x00,
+		Command: []byte{'A', 'O'},
+	}
+
+	actual, err := at.Bytes()
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	if len(actual) != 15 {
+		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
+	}
+
+	expected := []byte{api_id_at_remote, 1, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 'A', 'O'}
+	for i, b := range expected {
+		if b != actual[i] {
+			t.Errorf("Expected 0x02%x, but got 0x%02x", b, actual[i])
+		}
+	}
+}
+
+func Test_Valid_AT_REMOTE_With_Param(t *testing.T) {
+	at := &AT_REMOTE{
+		ID: 0x01,
+		Addr64: 0x000000000000FFFF,
+		Addr16: 0xFFFE,
+		Options: 0x00,
+		Command: []byte{'A', 'O'},
+		Parameter: []byte{0x01},
+	}
+
+	actual, err := at.Bytes()
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	if len(actual) != 16 {
+		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
+	}
+
+	expected := []byte{api_id_at_remote, 1, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 'A', 'O', 0x01}
+	for i, b := range expected {
+		if b != actual[i] {
+			t.Errorf("Expected 0x02%x, but got 0x%02x", b, actual[i])
+		}
+	}
+}
+
 func Test_Invalid_AT_QUEUE(t *testing.T) {
 	var at = &AT_QUEUE{
 		ID: 0x01,

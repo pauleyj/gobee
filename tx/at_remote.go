@@ -7,6 +7,8 @@ import (
 
 const api_id_at_remote byte = 0x17
 
+var _ TxFrame = (*AT_REMOTE)(nil)
+
 type AT_REMOTE struct {
 	ID byte
 	Addr64 uint64

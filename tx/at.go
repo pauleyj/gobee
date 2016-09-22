@@ -7,6 +7,8 @@ import (
 
 const api_id_at byte = 0x08
 
+var _ TxFrame = (*AT)(nil)
+
 type AT struct {
 	ID        byte
 	Command   []byte

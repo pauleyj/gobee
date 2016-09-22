@@ -10,6 +10,8 @@ const (
 	tx_status_discovery_status = rx_frame_state(iota)
 )
 
+var _ RxFrame = (*TX_STATUS)(nil)
+
 type TX_STATUS struct {
 	state rx_frame_state
 	index byte

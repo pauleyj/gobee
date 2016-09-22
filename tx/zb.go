@@ -4,6 +4,8 @@ import "bytes"
 
 const api_id_tx_zb byte = 0x10
 
+var _ TxFrame = (*ZB)(nil)
+
 type ZB struct {
 	ID              byte
 	Addr64          uint64

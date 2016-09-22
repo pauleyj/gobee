@@ -9,6 +9,8 @@ const (
 	at_data = rx_frame_state(iota)
 )
 
+var _ RxFrame = (*AT)(nil)
+
 type AT struct {
 	state   rx_frame_state
 	index   byte

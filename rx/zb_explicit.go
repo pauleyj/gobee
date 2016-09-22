@@ -13,6 +13,8 @@ const (
 	rx_zbe_data = rx_frame_state(iota)
 )
 
+var _ RxFrame = (*ZB_EXPLICIT)(nil)
+
 type ZB_EXPLICIT struct {
 	state     rx_frame_state
 	index     byte

@@ -6,6 +6,8 @@ import (
 
 const api_id_zb_explicit byte = 0x11
 
+var _ TxFrame = (*ZB_EXPLICIT)(nil)
+
 type ZB_EXPLICIT struct {
 	ID              byte
 	Addr64          uint64
