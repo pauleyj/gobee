@@ -27,6 +27,7 @@ const BROADCAST_ADDR_16 uint16 = 0xFFFE
 var (
 	escape_set = [...]byte{FRAME_DELIMITER, ESC, XON, XOFF}
 	errChecksumValidation = errors.New("Frame failed checksum validation")
+	errFrameDelimiter = errors.New("Expected frame delimiter")
 	errInvalidApiMode = errors.New("Invalid API mode")
 )
 
@@ -200,8 +201,7 @@ func (x *XBee) apiStateWaitFrameDelimiter(b byte) error {
 	}
 
 	x.rxState = STATE_DATA_FRAME_START
-
-	return nil
+	return errFrameDelimiter
 }
 
 func (x *XBee) apiStateDataLength(b byte) error {
