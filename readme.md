@@ -1,6 +1,7 @@
 # gobee - A Go XBee Library
 
 [![Build Status](https://travis-ci.org/pauleyj/gobee.svg?branch=master)](https://travis-ci.org/pauleyj/gobee)
+[![Coverage Status](https://coveralls.io/repos/github/pauleyj/gobee/badge.svg?branch=master)](https://coveralls.io/github/pauleyj/gobee?branch=master)
 
 gobee, a library for enabling support of XBee series 2 and series 3 low power radios to your Go project.
 
