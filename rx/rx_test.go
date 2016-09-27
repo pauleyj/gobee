@@ -28,20 +28,20 @@ func Test_AT(t *testing.T) {
 		}
 	}
 
-	if f.ID != response[0] {
-		t.Errorf("Expected FrameId: 0x01, but got 0x%02X", f.ID)
+	if f.ID() != response[0] {
+		t.Errorf("Expected FrameId: 0x01, but got 0x%02X", f.ID())
 	}
 
-	if !bytes.Equal(f.Command[:1], response[1:2]) {
-		t.Errorf("Expected Command: NI, but got %s", string(f.Command[:]))
+	if !bytes.Equal(f.Command(), []byte{'N', 'I'}) {
+		t.Errorf("Expected Command: NI, but got %s", f.Command())
 	}
 
-	if f.Status != response[3] {
-		t.Errorf("Expected Status: 0x00, but got 0x%02X", f.Status)
+	if f.Status() != response[3] {
+		t.Errorf("Expected Status: 0x00, but got 0x%02X", f.Status())
 	}
 
-	if !bytes.Equal(f.Data[:], response[4:]) {
-		t.Errorf("Expected Data: %v, but got %v", response[4:], f.Data)
+	if !bytes.Equal(f.Data(), response[4:]) {
+		t.Errorf("Expected Data: %v, but got %v", response[4:], f.Data())
 	}
 }
 
@@ -65,19 +65,19 @@ func Test_ZB(t *testing.T) {
 		}
 	}
 
-	if f.Addr64 != 0x0013A200403203AB {
+	if f.Addr64() != 0x0013A200403203AB {
 		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013A200403203AB, f.Addr64)
 	}
 
-	if f.Addr16 != 0x5FD6 {
+	if f.Addr16() != 0x5FD6 {
 		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x5FD6, f.Addr16)
 	}
 
-	if f.Options != 0x01 {
+	if f.Options() != 0x01 {
 		t.Errorf("Expected Options to be 0x%02X, but got 0x%02X", 0x01, f.Options)
 	}
 
-	if !bytes.Equal(f.Data[:], []byte{'f', 'o', 'o'}) {
+	if !bytes.Equal(f.Data(), []byte{'f', 'o', 'o'}) {
 		t.Errorf("Expected Data: %v, but got %v", []byte{'f', 'o', 'o'}, f.Data)
 	}
 }
@@ -107,35 +107,35 @@ func Test_ZB_Explicit(t *testing.T) {
 		}
 	}
 
-	if f.Addr64 != 0x0013A200403203AB {
+	if f.Addr64() != 0x0013A200403203AB {
 		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013A200403203AB, f.Addr64)
 	}
 
-	if f.Addr16 != 0x5FD6 {
+	if f.Addr16() != 0x5FD6 {
 		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x5FD6, f.Addr16)
 	}
 
-	if f.SrcEP != 0xCD {
+	if f.SrcEP() != 0xCD {
 		t.Errorf("Expected SrcEP to be 0x%02X, but got 0x%02X", 0xCD, f.SrcEP)
 	}
 
-	if f.DstEP != 0x01 {
+	if f.DstEP() != 0x01 {
 		t.Errorf("Expected DstEP to be 0x%02X, but got 0x%02X", 0x01, f.DstEP)
 	}
 
-	if f.ClusterID != 0x0054 {
+	if f.ClusterID() != 0x0054 {
 		t.Errorf("Expected ClusterID to be 0x%04X, but got 0x%04X", 0x54C1, f.ClusterID)
 	}
 
-	if f.ProfileID != 0xC105 {
+	if f.ProfileID() != 0xC105 {
 		t.Errorf("Expected ProfileID to be 0x%04X, but got 0x%04X", 0x0501, f.ProfileID)
 	}
 
-	if f.Options != 0x01 {
+	if f.Options() != 0x01 {
 		t.Errorf("Expected Options to be 0x%02X, but got 0x%02X", 0x01, f.Options)
 	}
 
-	if !bytes.Equal(f.Data[:], []byte{'f', 'o', 'o'}) {
+	if !bytes.Equal(f.Data(), []byte{'f', 'o', 'o'}) {
 		t.Errorf("Expected Data: %v, but got %v", []byte{'f', 'o', 'o'}, f.Data)
 	}
 }
@@ -162,24 +162,24 @@ func Test_TX_STATUS(t *testing.T) {
 		}
 	}
 
-	if f.ID != 0x01 {
-		t.Errorf("Expected ID = 0x%02X, but got 0x%02X", 0x01, f.ID)
+	if f.ID() != 0x01 {
+		t.Errorf("Expected ID = 0x%02X, but got 0x%02X", 0x01, f.ID())
 	}
 
-	if f.Addr16 != 0xFFFE {
-		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0xFFFE, f.Addr16)
+	if f.Addr16() != 0xFFFE {
+		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0xFFFE, f.Addr16())
 	}
 
-	if f.Retries != 0x00 {
-		t.Errorf("Expected Retries = 0x%02X, but got 0x%02X", 0x01, f.ID)
+	if f.Retries() != 0x00 {
+		t.Errorf("Expected Retries = 0x%02X, but got 0x%02X", 0x01, f.Retries())
 	}
 
-	if f.Delivery != 0x00 {
-		t.Errorf("Expected Delivery = 0x%02X, but got 0x%02X", 0x01, f.ID)
+	if f.Delivery() != 0x00 {
+		t.Errorf("Expected Delivery = 0x%02X, but got 0x%02X", 0x01, f.Delivery())
 	}
 
-	if f.Discovery != 0x00 {
-		t.Errorf("Expected Discovery = 0x%02X, but got 0x%02X", 0x01, f.ID)
+	if f.Discovery() != 0x00 {
+		t.Errorf("Expected Discovery = 0x%02X, but got 0x%02X", 0x01, f.Discovery())
 	}
 }
 
@@ -206,32 +206,32 @@ func Test_AT_REMOTE(t *testing.T) {
 		}
 	}
 
-	if f.ID != 0x01 {
-		t.Errorf("Expected ID = 0x%02X, but got 0x%02X", 0x01, f.ID)
+	if f.ID() != 0x01 {
+		t.Errorf("Expected ID = 0x%02X, but got 0x%02X", 0x01, f.ID())
 	}
 
-	if f.Addr64 != 0x0013a200403203cf {
-		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013a200403203cf, f.Addr64)
+	if f.Addr64() != 0x0013a200403203cf {
+		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013a200403203cf, f.Addr64())
 	}
 
-	if f.Addr16 != 0x0000 {
-		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x0000, f.Addr16)
+	if f.Addr16() != 0x0000 {
+		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x0000, f.Addr16())
 	}
 
-	if !bytes.Equal(f.Command[:], []byte{'A', 'O'}) {
-		t.Errorf("Expected command to be AO, but got %s", string(f.Command[:]))
+	if !bytes.Equal(f.Command(), []byte{'A', 'O'}) {
+		t.Errorf("Expected command to be AO, but got %s", string(f.Command()))
 	}
 
-	if f.Status != 0x00 {
-		t.Errorf("Expected Status = 0x%02X, but got 0x%02X", 0x00, f.ID)
+	if f.Status() != 0x00 {
+		t.Errorf("Expected Status = 0x%02X, but got 0x%02X", 0x00, f.Status())
 	}
 
-	if len(f.Data) != 0x01 {
-		t.Errorf("Expected Data length to be 0x%02X, but is 0x%02X", 0x01, len(f.Data))
+	if len(f.Data()) != 0x01 {
+		t.Errorf("Expected Data length to be 0x%02X, but is 0x%02X", 0x01, len(f.Data()))
 	}
 
-	if f.Data[0] != 0x02 {
-		t.Errorf("Expected Data to be 0x%02X, but got 0x%02X", 0x02, f.Data[0])
+	if f.Data()[0] != 0x02 {
+		t.Errorf("Expected Data to be 0x%02X, but got 0x%02X", 0x02, f.Data()[0])
 	}
 }
 

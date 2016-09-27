@@ -1,140 +1,84 @@
 package rx
 
-const zbExplicitAPIID byte = 0x91
+import (
+	"encoding/binary"
+)
 
 const (
-	zbeAddr64  = rxFrameState(iota)
-	zbeAddr16  = rxFrameState(iota)
-	zbeSrcEp   = rxFrameState(iota)
-	zbeDstEp   = rxFrameState(iota)
-	zbeCID     = rxFrameState(iota)
-	zbePID     = rxFrameState(iota)
-	zbeOptions = rxFrameState(iota)
-	zbeData    = rxFrameState(iota)
+	zbExplicitAPIID byte = 0x91
+
+	zbeAddr64Offset    = 0
+	zbeAddr16Offset    = 8
+	zbeSrcEPOffset     = 10
+	zbeDstEPOffset     = 11
+	zbeClusterIDOffset = 12
+	zbeClusterIDLength = 2
+	zbeProfileIDOffset = 14
+	zbeProfileIDLength = 2
+	zbeOptionsOffset   = 16
+	zbeDataOffset      = 17
 )
 
 var _ Frame = (*ZBExplicit)(nil)
 
 // ZBExplicit rx frame
 type ZBExplicit struct {
-	state     rxFrameState
-	index     byte
-	Addr64    uint64
-	Addr16    uint16
-	SrcEP     byte
-	DstEP     byte
-	ClusterID uint16
-	ProfileID uint16
-	Options   byte
-	Data      []byte
+	buffer []byte
 }
 
 func newZBExplicit() Frame {
 	return &ZBExplicit{
-		state: zbeAddr64,
+		buffer: make([]byte, 0),
 	}
 }
 
 // RX frame data
 func (f *ZBExplicit) RX(b byte) error {
-	var err error
+	f.buffer = append(f.buffer, b)
 
-	switch f.state {
-	case zbeAddr64:
-		err = f.stateAddr64(b)
-	case zbeAddr16:
-		err = f.stateAddr16(b)
-	case zbeSrcEp:
-		err = f.stateSrcEP(b)
-	case zbeDstEp:
-		err = f.stateDstEP(b)
-	case zbeCID:
-		err = f.stateCID(b)
-	case zbePID:
-		err = f.statePID(b)
-	case zbeOptions:
-		err = f.stateOptions(b)
-	case zbeData:
-		err = f.stateData(b)
+	return nil
+}
+
+// Addr64 64-bit address of sender
+func (f *ZBExplicit) Addr64() uint64 {
+	return binary.BigEndian.Uint64(f.buffer[zbeAddr64Offset : zbeAddr64Offset+addr64Length])
+}
+
+// Addr16 16-bit address of sender
+func (f *ZBExplicit) Addr16() uint16 {
+	return binary.BigEndian.Uint16(f.buffer[zbeAddr16Offset : zbeAddr16Offset+addr16Length])
+}
+
+// SrcEP source endpoint
+func (f *ZBExplicit) SrcEP() byte {
+	return f.buffer[zbeSrcEPOffset]
+}
+
+// DstEP destination endpoint
+func (f *ZBExplicit) DstEP() byte {
+	return f.buffer[zbeDstEPOffset]
+}
+
+// ClusterID clister ID
+func (f *ZBExplicit) ClusterID() uint16 {
+	return binary.BigEndian.Uint16(f.buffer[zbeClusterIDOffset : zbeClusterIDOffset+zbeClusterIDLength])
+}
+
+// ProfileID profile ID
+func (f *ZBExplicit) ProfileID() uint16 {
+	return binary.BigEndian.Uint16(f.buffer[zbeProfileIDOffset : zbeProfileIDOffset+zbeProfileIDLength])
+}
+
+// Options frame options
+func (f *ZBExplicit) Options() byte {
+	return f.buffer[zbeOptionsOffset]
+}
+
+// Data frame data
+func (f *ZBExplicit) Data() []byte {
+	if len(f.buffer) == zbeDataOffset {
+		return nil
 	}
 
-	return err
-}
-
-func (f *ZBExplicit) stateAddr64(b byte) error {
-	f.Addr64 += uint64(b) << (56 - (8 * f.index))
-	f.index++
-
-	if f.index == 8 {
-		f.index = 0
-		f.state = zbeAddr16
-	}
-
-	return nil
-}
-
-func (f *ZBExplicit) stateAddr16(b byte) error {
-	f.Addr16 += uint16(b) << (8 - (8 * f.index))
-	f.index++
-
-	if f.index == 2 {
-		f.index = 0
-		f.state = zbeSrcEp
-	}
-
-	return nil
-
-}
-
-func (f *ZBExplicit) stateSrcEP(b byte) error {
-	f.SrcEP = b
-	f.state = zbeDstEp
-
-	return nil
-}
-
-func (f *ZBExplicit) stateDstEP(b byte) error {
-	f.DstEP = b
-	f.state = zbeCID
-
-	return nil
-}
-
-func (f *ZBExplicit) stateCID(b byte) error {
-	f.ClusterID += uint16(b) << (8 - (8 * f.index))
-	f.index++
-
-	if f.index == 2 {
-		f.index = 0
-		f.state = zbePID
-	}
-	return nil
-}
-
-func (f *ZBExplicit) statePID(b byte) error {
-	f.ProfileID += uint16(b) << (8 - (8 * f.index))
-	f.index++
-
-	if f.index == 2 {
-		f.index = 0
-		f.state = zbeOptions
-	}
-	return nil
-}
-
-func (f *ZBExplicit) stateOptions(b byte) error {
-	f.Options = b
-	f.state = zbeData
-
-	return nil
-}
-
-func (f *ZBExplicit) stateData(b byte) error {
-	if f.Data == nil {
-		f.Data = make([]byte, 0)
-	}
-
-	f.Data = append(f.Data, b)
-
-	return nil
+	return f.buffer[zbeDataOffset:]
 }

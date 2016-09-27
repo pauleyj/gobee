@@ -1,91 +1,58 @@
 package rx
 
-const txStatusAPIID byte = 0x8B
+import "encoding/binary"
 
 const (
-	txStatusFrameID         = rxFrameState(iota)
-	txStatusAddr16          = rxFrameState(iota)
-	txStatusRetryCount      = rxFrameState(iota)
-	txStatusDeliveryStatus  = rxFrameState(iota)
-	txStatusDiscoveryStatus = rxFrameState(iota)
+	txStatusAPIID byte = 0x8B
+
+	txStatusFrameIDOffset         = 0
+	txStatusAddr16Offset          = 1
+	txStatusRetryCountOffset      = 3
+	txStatusDeliveryStatusOffset  = 4
+	txStatusDiscoveryStatusOffset = 5
 )
 
 var _ Frame = (*TXStatus)(nil)
 
 // TXStatus rx frame
 type TXStatus struct {
-	state     rxFrameState
-	index     byte
-	ID        byte
-	Addr16    uint16
-	Retries   byte
-	Delivery  byte
-	Discovery byte
+	buffer []byte
 }
 
 func newTXStatus() Frame {
 	return &TXStatus{
-		state: txStatusFrameID,
+		buffer: make([]byte, 0),
 	}
 }
 
 // RX frame data
 func (f *TXStatus) RX(b byte) error {
-	var err error
-
-	switch f.state {
-	case txStatusFrameID:
-		err = f.stateFrameID(b)
-	case txStatusAddr16:
-		err = f.stateAddr16(b)
-	case txStatusRetryCount:
-		err = f.stateRetries(b)
-	case txStatusDeliveryStatus:
-		err = f.stateDeliveryStatus(b)
-	case txStatusDiscoveryStatus:
-		err = f.stateDiscoveryStatus(b)
-	}
-
-	return err
-
-}
-
-func (f *TXStatus) stateFrameID(b byte) error {
-	f.ID = b
-	f.state = txStatusAddr16
+	f.buffer = append(f.buffer, b)
 
 	return nil
 }
 
-func (f *TXStatus) stateAddr16(b byte) error {
-	f.Addr16 += uint16(b) << (8 - (8 * f.index))
-	f.index++
-
-	if f.index == 2 {
-		f.index = 0
-		f.state = txStatusRetryCount
-	}
-
-	return nil
-
+// ID frame ID of TX frame this status is associated with
+func (f *TXStatus) ID() byte {
+	return f.buffer[txStatusFrameIDOffset]
 }
 
-func (f *TXStatus) stateRetries(b byte) error {
-	f.Retries = b
-	f.state = txStatusDeliveryStatus
-
-	return nil
+// Addr16 16-bit address of XBee this status message is associated with
+func (f *TXStatus) Addr16() uint16 {
+	return binary.BigEndian.Uint16(f.buffer[txStatusAddr16Offset : txStatusAddr16Offset+addr16Length])
 }
 
-func (f *TXStatus) stateDeliveryStatus(b byte) error {
-	f.Delivery = b
-	f.state = txStatusDiscoveryStatus
-
-	return nil
+// Retries number of retries
+func (f *TXStatus) Retries() byte {
+	return f.buffer[txStatusRetryCountOffset]
 }
 
-func (f *TXStatus) stateDiscoveryStatus(b byte) error {
-	f.Discovery = b
+// Delivery delivery status of the TX
+func (f *TXStatus) Delivery() byte {
+	return f.buffer[txStatusDeliveryStatusOffset]
+}
 
-	return nil
+// Discovery discovery status
+func (f *TXStatus) Discovery() byte {
+	return f.buffer[txStatusDiscoveryStatusOffset]
 }

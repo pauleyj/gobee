@@ -1,88 +1,56 @@
 package rx
 
-const zbAPIID byte = 0x90
+import "encoding/binary"
 
 const (
-	zbAddr64  = rxFrameState(iota)
-	zbAddr16  = rxFrameState(iota)
-	zbOptions = rxFrameState(iota)
-	zbData    = rxFrameState(iota)
+	zbAPIID byte = 0x90
+
+	zbAddr64Offset  = 0
+	zbAddr16Offset  = 8
+	zbOptionsOffset = 10
+	zbDataOffset    = 11
 )
 
 var _ Frame = (*ZB)(nil)
 
 // ZB rx frame
 type ZB struct {
-	state   rxFrameState
-	index   byte
-	Addr64  uint64
-	Addr16  uint16
-	Options byte
-	Data    []byte
+	buffer []byte
 }
 
 func newZB() Frame {
 	return &ZB{
-		state: zbAddr64,
+		buffer: make([]byte, 0),
 	}
 }
 
 // RX frame data
 func (f *ZB) RX(b byte) error {
-	var err error
-
-	switch f.state {
-	case zbAddr64:
-		err = f.stateAddr64(b)
-	case zbAddr16:
-		err = f.stateAddr16(b)
-	case zbOptions:
-		err = f.stateOptions(b)
-	case zbData:
-		err = f.stateData(b)
-	}
-
-	return err
-}
-
-func (f *ZB) stateAddr64(b byte) error {
-	f.Addr64 += uint64(b) << (56 - (8 * f.index))
-	f.index++
-
-	if f.index == 8 {
-		f.index = 0
-		f.state = zbAddr16
-	}
+	f.buffer = append(f.buffer, b)
 
 	return nil
 }
 
-func (f *ZB) stateAddr16(b byte) error {
-	f.Addr16 += uint16(b) << (8 - (8 * f.index))
-	f.index++
-
-	if f.index == 2 {
-		f.index = 0
-		f.state = zbOptions
-	}
-
-	return nil
-
+// Addr64 64-bit address of sender
+func (f *ZB) Addr64() uint64 {
+	return binary.BigEndian.Uint64(f.buffer[zbAddr64Offset : zbAddr64Offset+addr64Length])
 }
 
-func (f *ZB) stateOptions(b byte) error {
-	f.Options = b
-	f.state = zbData
-
-	return nil
+// Addr16 16-bit address of sender
+func (f *ZB) Addr16() uint16 {
+	return binary.BigEndian.Uint16(f.buffer[zbAddr16Offset : zbAddr16Offset+addr16Length])
 }
 
-func (f *ZB) stateData(b byte) error {
-	if f.Data == nil {
-		f.Data = make([]byte, 0)
+// Options frame options
+func (f *ZB) Options() byte {
+	return f.buffer[zbOptionsOffset]
+}
+
+// Data frame data
+func (f *ZB) Data() []byte {
+	if len(f.buffer) == zbDataOffset {
+		return nil
 	}
 
-	f.Data = append(f.Data, b)
-
-	return nil
+	return f.buffer[zbDataOffset:]
 }
