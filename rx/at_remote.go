@@ -1,104 +1,107 @@
 package rx
 
-const XBEE_API_ID_RX_AT_REMOTE byte = 0x97
+const atRemoteAPIID byte = 0x97
 
 const (
-	at_remote_id = rx_frame_state(iota)
-	at_remote_addr64 = rx_frame_state(iota)
-	at_remote_addr16 = rx_frame_state(iota)
-	at_remote_command = rx_frame_state(iota)
-	at_remote_status = rx_frame_state(iota)
-	at_remote_data = rx_frame_state(iota)
+	atRemoteID      = rxFrameState(iota)
+	atRemoteAddr64  = rxFrameState(iota)
+	atRemoteAddr16  = rxFrameState(iota)
+	atRemoteCommand = rxFrameState(iota)
+	atRemoteStatus  = rxFrameState(iota)
+	atRemoteData    = rxFrameState(iota)
 )
 
-var _ RxFrame = (*AT_REMOTE)(nil)
+var _ Frame = (*ATRemote)(nil)
 
-type AT_REMOTE struct {
-	state rx_frame_state
-	index byte
-	ID byte
-	Addr64 uint64
-	Addr16 uint16
+// ATRemote rx frame
+type ATRemote struct {
+	state   rxFrameState
+	index   byte
+	ID      byte
+	Addr64  uint64
+	Addr16  uint16
 	Command [2]byte
-	Status byte
-	Data []byte
+	Status  byte
+	Data    []byte
 }
 
-func newAT_REMOTE() RxFrame {
-	return &AT_REMOTE{
-		state: at_remote_id,
+func newATRemote() Frame {
+	return &ATRemote{
+		state: atRemoteID,
 	}
 }
 
-func (f *AT_REMOTE) RX(b byte) error {
+// RX frame data
+func (f *ATRemote) RX(b byte) error {
 	var err error
 
 	switch f.state {
-	case at_remote_id:
+	case atRemoteID:
 		err = f.stateID(b)
-	case at_remote_addr64:
+	case atRemoteAddr64:
 		err = f.stateAddr64(b)
-	case at_remote_addr16:
+	case atRemoteAddr16:
 		err = f.stateAddr16(b)
-	case at_remote_command:
+	case atRemoteCommand:
 		err = f.stateCommand(b)
-	case at_remote_status:
+	case atRemoteStatus:
 		err = f.stateStatus(b)
-	case at_remote_data:
+	case atRemoteData:
 		err = f.stateData(b)
 	}
 
 	return err
 }
 
-func (f *AT_REMOTE) stateID(b byte) error {
+func (f *ATRemote) stateID(b byte) error {
 	f.ID = b
-	f.state = at_remote_addr64
+	f.state = atRemoteAddr64
 
 	return nil
 }
-func (f *AT_REMOTE) stateAddr64(b byte) error {
+
+func (f *ATRemote) stateAddr64(b byte) error {
 	f.Addr64 += uint64(b) << (56 - (8 * f.index))
 	f.index++
 
 	if f.index == 8 {
 		f.index = 0
-		f.state = at_remote_addr16
+		f.state = atRemoteAddr16
 	}
 
 	return nil
 }
 
-func (f *AT_REMOTE) stateAddr16(b byte) error {
+func (f *ATRemote) stateAddr16(b byte) error {
 	f.Addr16 += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
 		f.index = 0
-		f.state = at_remote_command
+		f.state = atRemoteCommand
 	}
 
 	return nil
 
 }
 
-func (f *AT_REMOTE) stateCommand(b byte) error {
+func (f *ATRemote) stateCommand(b byte) error {
 	f.Command[f.index] = b
 	f.index++
 	if f.index == 2 {
-		f.state = at_remote_status
+		f.state = atRemoteStatus
 	}
 	return nil
 }
 
-func (f *AT_REMOTE) stateStatus(b byte) error {
+func (f *ATRemote) stateStatus(b byte) error {
 	f.Status = b
-	f.state = at_remote_data
+	f.state = atRemoteData
 
 	return nil
 }
 
-func (f *AT_REMOTE) stateData(b byte) error {
+func (f *ATRemote) stateData(b byte) error {
 	if f.Data == nil {
 		f.Data = make([]byte, 0)
 	}

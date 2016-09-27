@@ -1,55 +1,57 @@
 package rx
 
-const XBEE_API_ID_RX_ZB byte = 0x90
+const zbAPIID byte = 0x90
 
 const (
-	rx_zb_addr64 = rx_frame_state(iota)
-	rx_zb_addr16 = rx_frame_state(iota)
-	rx_zb_options = rx_frame_state(iota)
-	rx_zb_data = rx_frame_state(iota)
+	zbAddr64  = rxFrameState(iota)
+	zbAddr16  = rxFrameState(iota)
+	zbOptions = rxFrameState(iota)
+	zbData    = rxFrameState(iota)
 )
 
-var _ RxFrame = (*ZB)(nil)
+var _ Frame = (*ZB)(nil)
 
+// ZB rx frame
 type ZB struct {
-	state rx_frame_state
-	index byte
-	Addr64 uint64
-	Addr16 uint16
+	state   rxFrameState
+	index   byte
+	Addr64  uint64
+	Addr16  uint16
 	Options byte
-	Data []byte
+	Data    []byte
 }
 
-func newZB() RxFrame {
+func newZB() Frame {
 	return &ZB{
-		state: rx_zb_addr64,
+		state: zbAddr64,
 	}
 }
 
+// RX frame data
 func (f *ZB) RX(b byte) error {
 	var err error
 
 	switch f.state {
-	case rx_zb_addr64:
+	case zbAddr64:
 		err = f.stateAddr64(b)
-	case rx_zb_addr16:
+	case zbAddr16:
 		err = f.stateAddr16(b)
-	case rx_zb_options:
+	case zbOptions:
 		err = f.stateOptions(b)
-	case rx_zb_data:
+	case zbData:
 		err = f.stateData(b)
 	}
 
 	return err
 }
 
-func (f *ZB) stateAddr64(b byte) error  {
+func (f *ZB) stateAddr64(b byte) error {
 	f.Addr64 += uint64(b) << (56 - (8 * f.index))
 	f.index++
 
 	if f.index == 8 {
 		f.index = 0
-		f.state = rx_zb_addr16
+		f.state = zbAddr16
 	}
 
 	return nil
@@ -61,7 +63,7 @@ func (f *ZB) stateAddr16(b byte) error {
 
 	if f.index == 2 {
 		f.index = 0
-		f.state = rx_zb_options
+		f.state = zbOptions
 	}
 
 	return nil
@@ -70,7 +72,7 @@ func (f *ZB) stateAddr16(b byte) error {
 
 func (f *ZB) stateOptions(b byte) error {
 	f.Options = b
-	f.state = rx_zb_data
+	f.state = zbData
 
 	return nil
 }

@@ -2,38 +2,39 @@ package rx
 
 import "errors"
 
-// defines a function returning an RxFrame
-type FrameFactory func() RxFrame
+// FrameFactory defines a function returning an RX Frame
+type FrameFactory func() Frame
 
 var (
-	errUnknownFrameApiId = errors.New("Unknown frame API ID")
-	errFrameIdExists = errors.New("Frame factory for API ID already exists")
-	rxFrameFactory map[byte]FrameFactory
+	errUnknownFrameAPIID = errors.New("Unknown frame API ID")
+	errFrameAPIIDExists  = errors.New("Frame factory for API ID already exists")
+	rxFrameFactory       map[byte]FrameFactory
 )
 
 func init() {
 	rxFrameFactory = make(map[byte]FrameFactory)
 	// AT command response
-	rxFrameFactory[XBEE_API_ID_RX_AT] = newAT
-	rxFrameFactory[XBEE_API_ID_RX_ZB] = newZB
-	rxFrameFactory[XBEE_API_TX_STATUS] = newTX_STATUS
-	rxFrameFactory[XBEE_API_ID_RX_ZB_EXPLICIT] = newZB_EXPLICIT
-	rxFrameFactory[XBEE_API_ID_RX_AT_REMOTE] = newAT_REMOTE
+	rxFrameFactory[atAPIID] = newAT
+	rxFrameFactory[zbAPIID] = newZB
+	rxFrameFactory[txStatusAPIID] = newTXStatus
+	rxFrameFactory[zbExplicitAPIID] = newZBExplicit
+	rxFrameFactory[atRemoteAPIID] = newATRemote
 }
 
-// NewRxFrameForApiId creates an appropriate RxFrame for the given API ID
-func NewRxFrameForApiId(id byte) (RxFrame, error) {
+// NewFrameForAPIID creates an appropriate RxFrame for the given API ID
+func NewFrameForAPIID(id byte) (Frame, error) {
 	if f, ok := rxFrameFactory[id]; ok {
 		return f(), nil
 	}
-	return nil, errUnknownFrameApiId
+	return nil, errUnknownFrameAPIID
 }
 
-func AddApiFactoryForId(id byte, factory FrameFactory ) error {
+// AddFactoryForAPIID add frame by ID so factory can produce
+func AddFactoryForAPIID(id byte, factory FrameFactory) error {
 	if _, ok := rxFrameFactory[id]; !ok {
 		rxFrameFactory[id] = factory
 	} else {
-		return errFrameIdExists
+		return errFrameAPIIDExists
 	}
 
 	return nil

@@ -1,7 +1,8 @@
 package rx
 
-type rx_frame_state int
+type rxFrameState int
 
-type RxFrame interface {
+// Frame interface for RX frames
+type Frame interface {
 	RX(byte) error
 }

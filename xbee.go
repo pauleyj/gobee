@@ -7,68 +7,83 @@ import (
 	"github.com/pauleyj/gobee/tx"
 )
 
-/*
- * Frame Constants
- */
-const FRAME_DELIMITER byte = 0x7E
-const XBEE_NUMBER_OF_SIZE_BYTES uint8 = 2
-const XBEE_VALID_FRAME_CHECKSUM byte = 0xFF
-const ESC byte = 0x7D
-const XON byte = 0x11
-const XOFF byte = 0x13
-const ESC_CHAR = 0x20
+// frameDelimiter start API frame delimiter, requires escaping in mode 2
+const frameDelimiter byte = 0x7E
 
-/*
- * Address constants
- */
-const BROADCAST_ADDR_64 uint64 = 0x000000000000FFFF
-const BROADCAST_ADDR_16 uint16 = 0xFFFE
+// dataLengthBytes Number of data length bytes
+const dataLengthBytes uint8 = 2
+
+// validChecksum API frame valid checksum
+const validChecksum byte = 0xFF
+
+// esc escape character
+const esc byte = 0x7D
+
+// xon XON character, requires escaping in mode 2
+const xon byte = 0x11
+
+// xoff XOFF character, requires escaping in mode 2
+const xoff byte = 0x13
+
+// escChar the character used to escape charters needing escaping
+const sscChar = 0x20
+
+// BroadcastAddr64 64-bit broadcast address
+const BroadcastAddr64 uint64 = 0x000000000000FFFF
+
+// BriadcastAddr16 16-bit broadcast address
+const BriadcastAddr16 uint16 = 0xFFFE
 
 var (
-	escape_set = [...]byte{FRAME_DELIMITER, ESC, XON, XOFF}
+	escapeSet             = [...]byte{frameDelimiter, esc, xon, xoff}
 	errChecksumValidation = errors.New("Frame failed checksum validation")
-	errFrameDelimiter = errors.New("Expected frame delimiter")
-	errInvalidApiMode = errors.New("Invalid API mode")
+	errFrameDelimiter     = errors.New("Expected frame delimiter")
+	errInvalidAPIMode     = errors.New("Invalid API mode")
 )
+
+// apiState the API state type
+type apiState int
 
 const (
-	STATE_DATA_FRAME_START = ApiState(iota)
-	STATE_DATA_FRAME_LENGTH = ApiState(iota)
-	STATE_DATA_FRAME_API_ID = ApiState(iota)
-	STATE_DATA_FRAME_DATA = ApiState(iota)
-	STATE_DATA_FRAME_CHECKSUM = ApiState(iota)
+	frameStart    = apiState(iota)
+	frameLength   = apiState(iota)
+	apiID         = apiState(iota)
+	frameData     = apiState(iota)
+	frameChecksum = apiState(iota)
 )
 
-type ApiState int
-
+// XBeeTransmitter used to transmit API frame bytes to serial communications port
 type XBeeTransmitter interface {
 	Transmit([]byte) (int, error)
 }
 
+// XBeeReceiver used to report frames received by the XBee
 type XBeeReceiver interface {
-	Receive(rx.RxFrame) error
+	Receive(rx.Frame) error
 }
 
+// XBee all the things
 type XBee struct {
 	transmitter              XBeeTransmitter
 	receiver                 XBeeReceiver
 	apiMode                  byte
 	escapeNext               bool
-	rxState                  ApiState
+	rxState                  apiState
 	rxFrameDataSize          uint16
 	rxFrameChecksum          uint8
 	rxFrameDataSizeByteIndex uint8
 	rxFrameDataIndex         uint16
-	rxFrame                  rx.RxFrame
+	rxFrame                  rx.Frame
 }
 
+// NewXBee constructor of XBee's
 func NewXBee(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
 	return &XBee{
 		transmitter:              transmitter,
 		receiver:                 receiver,
-		apiMode: 		  1,
+		apiMode:                  1,
 		escapeNext:               false,
-		rxState:                  STATE_DATA_FRAME_START,
+		rxState:                  frameStart,
 		rxFrameDataSize:          0,
 		rxFrameChecksum:          0,
 		rxFrameDataSizeByteIndex: 0,
@@ -77,11 +92,12 @@ func NewXBee(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
 	}
 }
 
+// RX bytes received from the serial communications port are sent here
 func (x *XBee) RX(b byte) error {
 	var err error
 
-	if x.isApiEscapeModeEnabled() {
-		if x.rxState != STATE_DATA_FRAME_START && b == ESC && !x.escapeNext {
+	if x.isAPIEscapeModeEnabled() {
+		if x.rxState != frameStart && b == esc && !x.escapeNext {
 			x.escapeNext = true
 			return nil
 		}
@@ -93,13 +109,13 @@ func (x *XBee) RX(b byte) error {
 	}
 
 	switch x.rxState {
-	case STATE_DATA_FRAME_LENGTH:
+	case frameLength:
 		err = x.apiStateDataLength(b)
-	case STATE_DATA_FRAME_API_ID:
-		err = x.apiStateApiId(b)
-	case STATE_DATA_FRAME_DATA:
+	case apiID:
+		err = x.apiStateAPIID(b)
+	case frameData:
 		err = x.apiStateFrameData(b)
-	case STATE_DATA_FRAME_CHECKSUM:
+	case frameChecksum:
 		err = x.apiStateChecksum(b)
 		if err == nil {
 			x.receiver.Receive(x.rxFrame)
@@ -110,29 +126,30 @@ func (x *XBee) RX(b byte) error {
 	return err
 }
 
-
-func (x *XBee) TX(frame tx.TxFrame) (int, error) {
+// TX transmit a frame to the XBee, forms an appropriate API frame for the frame being sent,
+// uses the XBeeTransmitter to send the API frame bytes to the serial communications port
+func (x *XBee) TX(frame tx.Frame) (int, error) {
 	f, err := frame.Bytes()
 	if err != nil {
 		return 0, err
 	}
 
 	var b bytes.Buffer
-	var checksum byte = 0
+	var checksum byte
 	l := len(f)
 
-	b.WriteByte(FRAME_DELIMITER)
+	b.WriteByte(frameDelimiter)
 
 	lh := byte(l >> 8)
 	ll := byte(l & 0x00FF)
-	if x.isApiEscapeModeEnabled() {
+	if x.isAPIEscapeModeEnabled() {
 		if shouldEscape(lh) {
 			lh = escape(lh)
-			b.WriteByte(ESC)
+			b.WriteByte(esc)
 		}
 		if shouldEscape(ll) {
 			ll = escape(ll)
-			b.WriteByte(ESC)
+			b.WriteByte(esc)
 		}
 	}
 	b.WriteByte(lh)
@@ -142,36 +159,37 @@ func (x *XBee) TX(frame tx.TxFrame) (int, error) {
 		// checksum is calculated on pre escaped value
 		checksum += i
 
-		if x.isApiEscapeModeEnabled() && shouldEscape(i) {
+		if x.isAPIEscapeModeEnabled() && shouldEscape(i) {
 			i = escape(i)
-			b.WriteByte(ESC)
+			b.WriteByte(esc)
 		}
 
 		b.WriteByte(i)
 	}
 
-	checksum = XBEE_VALID_FRAME_CHECKSUM - checksum
+	checksum = validChecksum - checksum
 
 	// checksum is escaped if needed
 	if x.apiMode == 2 && shouldEscape(checksum) {
 		checksum = escape(checksum)
-		b.WriteByte(ESC)
+		b.WriteByte(esc)
 	}
 	b.WriteByte(checksum)
 
 	return x.transmitter.Transmit(b.Bytes())
 }
 
-func (x *XBee) SetApiMode(mode byte) error {
+// SetAPIMode sets the API mode so goobe knows to escape or not
+func (x *XBee) SetAPIMode(mode byte) error {
 	if mode != 1 && mode != 2 {
-		return errInvalidApiMode
+		return errInvalidAPIMode
 	}
 	x.apiMode = mode
 	return nil
 }
 
 func shouldEscape(b byte) bool {
-	for _, v := range escape_set {
+	for _, v := range escapeSet {
 		if b == v {
 			return true
 		}
@@ -180,27 +198,26 @@ func shouldEscape(b byte) bool {
 }
 
 func escape(b byte) byte {
-	return (b ^ ESC_CHAR)
+	return (b ^ sscChar)
 }
 
-func (x *XBee) isApiEscapeModeEnabled() bool {
+func (x *XBee) isAPIEscapeModeEnabled() bool {
 	return x.apiMode == 0x02
 }
 
-
 func (x *XBee) apiStateWaitFrameDelimiter(b byte) error {
-	if FRAME_DELIMITER == b {
+	if frameDelimiter == b {
 		x.rxFrameDataSize = 0
 		x.rxFrameChecksum = 0
 		x.rxFrameDataSizeByteIndex = 0
 		x.rxFrameDataIndex = 0
 		x.rxFrame = nil
-		x.rxState = STATE_DATA_FRAME_LENGTH
+		x.rxState = frameLength
 
 		return nil
 	}
 
-	x.rxState = STATE_DATA_FRAME_START
+	x.rxState = frameStart
 	return errFrameDelimiter
 }
 
@@ -208,24 +225,24 @@ func (x *XBee) apiStateDataLength(b byte) error {
 	x.rxFrameDataSize += uint16(b << (1 - x.rxFrameDataSizeByteIndex))
 	x.rxFrameDataSizeByteIndex++
 
-	if x.rxFrameDataSizeByteIndex == XBEE_NUMBER_OF_SIZE_BYTES {
-		x.rxState = STATE_DATA_FRAME_API_ID
+	if x.rxFrameDataSizeByteIndex == dataLengthBytes {
+		x.rxState = apiID
 	}
 
 	return nil
 }
 
-func (x *XBee) apiStateApiId(b byte) error {
+func (x *XBee) apiStateAPIID(b byte) error {
 	var err error
 
-	x.rxFrame, err = rx.NewRxFrameForApiId(b)
+	x.rxFrame, err = rx.NewFrameForAPIID(b)
 	if err != nil {
-		x.rxState = STATE_DATA_FRAME_START
+		x.rxState = frameStart
 		return err
 	}
 	x.rxFrameChecksum += b
 	x.rxFrameDataIndex++
-	x.rxState = STATE_DATA_FRAME_DATA
+	x.rxState = frameData
 
 	return nil
 }
@@ -236,17 +253,17 @@ func (x *XBee) apiStateFrameData(b byte) error {
 	x.rxFrameDataIndex++
 
 	if x.rxFrameDataIndex == x.rxFrameDataSize {
-		x.rxState = STATE_DATA_FRAME_CHECKSUM
+		x.rxState = frameChecksum
 	}
 
 	return nil
 }
 
 func (x *XBee) apiStateChecksum(b byte) error {
-	x.rxState = STATE_DATA_FRAME_START
+	x.rxState = frameStart
 	x.rxFrameChecksum += b
 
-	if XBEE_VALID_FRAME_CHECKSUM != x.rxFrameChecksum {
+	if validChecksum != x.rxFrameChecksum {
 		return errChecksumValidation
 	}
 

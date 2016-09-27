@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/pauleyj/gobee.svg?branch=master)](https://travis-ci.org/pauleyj/gobee)
 [![Coverage Status](https://coveralls.io/repos/github/pauleyj/gobee/badge.svg)](https://coveralls.io/github/pauleyj/gobee)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pauleyj/gobee)](https://goreportcard.com/report/github.com/pauleyj/gobee)
 
 gobee, a library for enabling support of XBee series 2 and series 3 low power radios to your Go project.
 
@@ -43,9 +44,24 @@ xbee        := gobee.NewXBee(transmitter, receiver)
 ...
 ```
 
+#### Transmitting a Frame
+
+When sending a frame, construct and hand it to gobee to generate an API frame.  gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
+
+```golang
+at := &tx.AT {
+	ID: 1,
+	Command: []byte{'A','O'},
+	Paramerer: []{1},
+}
+
+_, err := xbee.TX(at)
+...
+```
+
 #### Sending Data to the UART
 
-When a frame is transmitted, gobee forms an appropriate API packet and sends it to your XBeeTransmitter for writing to the serial UART the physical XBee is connected to.
+When a frame is transmitted, gobee forms an appropriate API packet (see Transmitting a Frame) and sends it to your XBeeTransmitter for writing to the serial UART the physical XBee is connected to.
 
 ```golang
 ...
@@ -91,3 +107,7 @@ func (r *Receiver) Receive(f rx.RxFrame) error {
 	return nil
 }
 ```
+
+### License
+
+gobee is licensed under the MIT License.  See the [LICENSE](https://github.com/pauleyj/gobee/blob/master/LICENSE) for more information.

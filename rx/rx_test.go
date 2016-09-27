@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-const unknown_api_id byte = 0x00
-
 func Test_AT(t *testing.T) {
 	// at command response frame data
 	response := []byte{
@@ -96,8 +94,8 @@ func Test_ZB_Explicit(t *testing.T) {
 		0x01,
 		0x66, 0x6f, 0x6f}
 
-	rxf := newZB_EXPLICIT()
-	f, ok := rxf.(*ZB_EXPLICIT)
+	rxf := newZBExplicit()
+	f, ok := rxf.(*ZBExplicit)
 	if !ok {
 		t.Error("Failed type assertion")
 	}
@@ -151,8 +149,8 @@ func Test_TX_STATUS(t *testing.T) {
 		0x00,
 	}
 
-	rxf := newTX_STATUS()
-	f, ok := rxf.(*TX_STATUS)
+	rxf := newTXStatus()
+	f, ok := rxf.(*TXStatus)
 	if !ok {
 		t.Error("Failed type assertion")
 	}
@@ -195,8 +193,8 @@ func Test_AT_REMOTE(t *testing.T) {
 		0x02,
 	}
 
-	rxf := newAT_REMOTE()
-	f, ok := rxf.(*AT_REMOTE)
+	rxf := newATRemote()
+	f, ok := rxf.(*ATRemote)
 	if !ok {
 		t.Error("Failed type assertion AT_REMOTE")
 	}
@@ -237,8 +235,10 @@ func Test_AT_REMOTE(t *testing.T) {
 	}
 }
 
+const unknownAPIID byte = 0x00
+
 func TestNewRxFrameForApiId(t *testing.T) {
-	rxf, err := NewRxFrameForApiId(XBEE_API_ID_RX_AT)
+	rxf, err := NewFrameForAPIID(atAPIID)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -247,7 +247,7 @@ func TestNewRxFrameForApiId(t *testing.T) {
 		t.Error("Failed type assertion AT")
 	}
 
-	rxf, err = NewRxFrameForApiId(XBEE_API_ID_RX_ZB)
+	rxf, err = NewFrameForAPIID(zbAPIID)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -256,68 +256,68 @@ func TestNewRxFrameForApiId(t *testing.T) {
 		t.Error("Failed type assertion ZB")
 	}
 
-	rxf, err = NewRxFrameForApiId(XBEE_API_TX_STATUS)
+	rxf, err = NewFrameForAPIID(txStatusAPIID)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
-	_, ok = rxf.(*TX_STATUS)
+	_, ok = rxf.(*TXStatus)
 	if !ok {
 		t.Error("Failed type assertion TX_STATUS")
 	}
 
-	rxf, err = NewRxFrameForApiId(XBEE_API_ID_RX_ZB_EXPLICIT)
+	rxf, err = NewFrameForAPIID(zbExplicitAPIID)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
-	_, ok = rxf.(*ZB_EXPLICIT)
+	_, ok = rxf.(*ZBExplicit)
 	if !ok {
 		t.Error("Failed type assertion ZB_EXPLICIT")
 	}
 
-	rxf, err = NewRxFrameForApiId(XBEE_API_ID_RX_AT_REMOTE)
+	rxf, err = NewFrameForAPIID(atRemoteAPIID)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
-	_, ok = rxf.(*AT_REMOTE)
+	_, ok = rxf.(*ATRemote)
 	if !ok {
 		t.Error("Failed type assertion AT_REMOTE")
 	}
 
-	_, err = NewRxFrameForApiId(unknown_api_id)
+	_, err = NewFrameForAPIID(unknownAPIID)
 	if err == nil {
-		t.Errorf("Expected error: %v, but got none", errUnknownFrameApiId)
+		t.Errorf("Expected error: %v, but got none", errUnknownFrameAPIID)
 	}
-	if err != errUnknownFrameApiId {
-		t.Errorf("Expected error: %v, but got: %v", errUnknownFrameApiId, err)
+	if err != errUnknownFrameAPIID {
+		t.Errorf("Expected error: %v, but got: %v", errUnknownFrameAPIID, err)
 	}
 }
 
-const mock_api_id byte = 0xFF
+const mockAPIID byte = 0xFF
 
-type mock_api_rx_frame struct {
+type mockFrame struct {
 	ID byte
 }
 
-func (f *mock_api_rx_frame) RX(b byte) error {
+func (f *mockFrame) RX(b byte) error {
 	f.ID = b
 	return nil
 }
 
-func mockFrameFactoryFunc() RxFrame {
-	return &mock_api_rx_frame{}
+func mockFrameFactoryFunc() Frame {
+	return &mockFrame{}
 }
 
 func TestAddNewAPIFrameFactory(t *testing.T) {
-	err := AddApiFactoryForId(mock_api_id, mockFrameFactoryFunc)
+	err := AddFactoryForAPIID(mockAPIID, mockFrameFactoryFunc)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
 
-	rxf, err := NewRxFrameForApiId(mock_api_id)
+	rxf, err := NewFrameForAPIID(mockAPIID)
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
 	}
-	_, ok := rxf.(*mock_api_rx_frame)
+	_, ok := rxf.(*mockFrame)
 	if !ok {
 		t.Error("Failed type assertion mock_api_rx_frame")
 	}
@@ -325,7 +325,7 @@ func TestAddNewAPIFrameFactory(t *testing.T) {
 }
 
 func TestAddExistingAPIFrameFactory(t *testing.T) {
-	err := AddApiFactoryForId(XBEE_API_ID_RX_AT, mockFrameFactoryFunc)
+	err := AddFactoryForAPIID(atAPIID, mockFrameFactoryFunc)
 	if err == nil {
 		t.Error("Expected error, but got none")
 	}

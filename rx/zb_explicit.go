@@ -1,22 +1,23 @@
 package rx
 
-const XBEE_API_ID_RX_ZB_EXPLICIT byte = 0x91
+const zbExplicitAPIID byte = 0x91
 
 const (
-	rx_zbe_addr64 = rx_frame_state(iota)
-	rx_zbe_addr16 = rx_frame_state(iota)
-	rx_zbe_srcep = rx_frame_state(iota)
-	rx_zbe_dstep = rx_frame_state(iota)
-	rx_zbe_cid = rx_frame_state(iota)
-	rx_zbe_pid = rx_frame_state(iota)
-	rx_zbe_options = rx_frame_state(iota)
-	rx_zbe_data = rx_frame_state(iota)
+	zbeAddr64  = rxFrameState(iota)
+	zbeAddr16  = rxFrameState(iota)
+	zbeSrcEp   = rxFrameState(iota)
+	zbeDstEp   = rxFrameState(iota)
+	zbeCID     = rxFrameState(iota)
+	zbePID     = rxFrameState(iota)
+	zbeOptions = rxFrameState(iota)
+	zbeData    = rxFrameState(iota)
 )
 
-var _ RxFrame = (*ZB_EXPLICIT)(nil)
+var _ Frame = (*ZBExplicit)(nil)
 
-type ZB_EXPLICIT struct {
-	state     rx_frame_state
+// ZBExplicit rx frame
+type ZBExplicit struct {
+	state     rxFrameState
 	index     byte
 	Addr64    uint64
 	Addr16    uint16
@@ -28,106 +29,107 @@ type ZB_EXPLICIT struct {
 	Data      []byte
 }
 
-func newZB_EXPLICIT() RxFrame {
-	return &ZB_EXPLICIT{
-		state: rx_zbe_addr64,
+func newZBExplicit() Frame {
+	return &ZBExplicit{
+		state: zbeAddr64,
 	}
 }
 
-func (f *ZB_EXPLICIT) RX(b byte) error {
+// RX frame data
+func (f *ZBExplicit) RX(b byte) error {
 	var err error
 
 	switch f.state {
-	case rx_zbe_addr64:
+	case zbeAddr64:
 		err = f.stateAddr64(b)
-	case rx_zbe_addr16:
+	case zbeAddr16:
 		err = f.stateAddr16(b)
-	case rx_zbe_srcep:
+	case zbeSrcEp:
 		err = f.stateSrcEP(b)
-	case rx_zbe_dstep:
+	case zbeDstEp:
 		err = f.stateDstEP(b)
-	case rx_zbe_cid:
+	case zbeCID:
 		err = f.stateCID(b)
-	case rx_zbe_pid:
+	case zbePID:
 		err = f.statePID(b)
-	case rx_zbe_options:
+	case zbeOptions:
 		err = f.stateOptions(b)
-	case rx_zbe_data:
+	case zbeData:
 		err = f.stateData(b)
 	}
 
 	return err
 }
 
-func (f *ZB_EXPLICIT) stateAddr64(b byte) error {
+func (f *ZBExplicit) stateAddr64(b byte) error {
 	f.Addr64 += uint64(b) << (56 - (8 * f.index))
 	f.index++
 
 	if f.index == 8 {
 		f.index = 0
-		f.state = rx_zbe_addr16
+		f.state = zbeAddr16
 	}
 
 	return nil
 }
 
-func (f *ZB_EXPLICIT) stateAddr16(b byte) error {
+func (f *ZBExplicit) stateAddr16(b byte) error {
 	f.Addr16 += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
 		f.index = 0
-		f.state = rx_zbe_srcep
+		f.state = zbeSrcEp
 	}
 
 	return nil
 
 }
 
-func (f *ZB_EXPLICIT) stateSrcEP(b byte) error {
+func (f *ZBExplicit) stateSrcEP(b byte) error {
 	f.SrcEP = b
-	f.state = rx_zbe_dstep
+	f.state = zbeDstEp
 
 	return nil
 }
 
-func (f *ZB_EXPLICIT) stateDstEP(b byte) error {
+func (f *ZBExplicit) stateDstEP(b byte) error {
 	f.DstEP = b
-	f.state = rx_zbe_cid
+	f.state = zbeCID
 
 	return nil
 }
 
-func (f *ZB_EXPLICIT) stateCID(b byte) error {
+func (f *ZBExplicit) stateCID(b byte) error {
 	f.ClusterID += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
 		f.index = 0
-		f.state = rx_zbe_pid
+		f.state = zbePID
 	}
 	return nil
 }
 
-func (f *ZB_EXPLICIT) statePID(b byte) error {
+func (f *ZBExplicit) statePID(b byte) error {
 	f.ProfileID += uint16(b) << (8 - (8 * f.index))
 	f.index++
 
 	if f.index == 2 {
 		f.index = 0
-		f.state = rx_zbe_options
+		f.state = zbeOptions
 	}
 	return nil
 }
 
-func (f *ZB_EXPLICIT) stateOptions(b byte) error {
+func (f *ZBExplicit) stateOptions(b byte) error {
 	f.Options = b
-	f.state = rx_zbe_data
+	f.state = zbeData
 
 	return nil
 }
 
-func (f *ZB_EXPLICIT) stateData(b byte) error {
+func (f *ZBExplicit) stateData(b byte) error {
 	if f.Data == nil {
 		f.Data = make([]byte, 0)
 	}
