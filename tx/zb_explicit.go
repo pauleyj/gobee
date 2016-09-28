@@ -24,7 +24,7 @@ type ZBExplicit struct {
 
 // Bytes turn ATRemote frame into bytes
 func (f *ZBExplicit) Bytes() ([]byte, error) {
-	b := new(bytes.Buffer)
+	var b bytes.Buffer
 
 	b.WriteByte(zbExplicitAPIID)
 	b.WriteByte(f.ID)

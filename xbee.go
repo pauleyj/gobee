@@ -76,7 +76,7 @@ type XBee struct {
 	rxFrame                  rx.Frame
 }
 
-// NewXBee constructor of XBee's
+// New constructor of XBee's
 func New(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
 	return &XBee{
 		transmitter:              transmitter,
