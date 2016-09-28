@@ -26,6 +26,7 @@ func (f *ATRemote) Bytes() ([]byte, error) {
 	}
 
 	var b bytes.Buffer
+
 	b.WriteByte(atRemoteAPIID)
 	b.WriteByte(f.ID)
 	b.Write(uint64ToBytes(f.Addr64))

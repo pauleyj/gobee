@@ -23,6 +23,7 @@ func (f *AT) Bytes() ([]byte, error) {
 	}
 
 	var b bytes.Buffer
+
 	b.WriteByte(atAPIID)
 	b.WriteByte(f.ID)
 	b.Write(f.Command)

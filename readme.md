@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/pauleyj/gobee.svg?branch=master)](https://travis-ci.org/pauleyj/gobee)
 [![Coverage Status](https://coveralls.io/repos/github/pauleyj/gobee/badge.svg)](https://coveralls.io/github/pauleyj/gobee)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pauleyj/gobee)](https://goreportcard.com/report/github.com/pauleyj/gobee)
+[![codebeat badge](https://codebeat.co/badges/75f31b30-5397-4626-9118-9b599e088f44)](https://codebeat.co/projects/github-com-pauleyj-gobee)
 
 gobee, a library for enabling support of XBee series 2 and series 3 low power radios to your Go project.
 
@@ -40,11 +41,11 @@ This the XBee widget used to communicate with the physical XBee.
 ...
 transmitter := &Transmitter{...}	// your XBeeTransmitter
 receiver    := &Receiver{...}		// your XBeeReceiver
-xbee        := gobee.NewXBee(transmitter, receiver)
+xbee        := gobee.New(transmitter, receiver)
 ...
 ```
 
-#### Transmitting a Frame
+#### Transmitting a Data Frame
 
 When sending a frame, construct and hand it to gobee to generate an API frame.  gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
 
@@ -59,9 +60,9 @@ _, err := xbee.TX(at)
 ...
 ```
 
-#### Sending Data to the UART
+#### Sending API Frame to the UART
 
-When a frame is transmitted, gobee forms an appropriate API packet (see Transmitting a Frame) and sends it to your XBeeTransmitter for writing to the serial UART the physical XBee is connected to.
+When a frame is transmitted, gobee forms an appropriate API packet (see Transmitting a Frame) and sends it to your XBeeTransmitter for writing to the serial UART the XBee is connected to.
 
 ```golang
 ...
@@ -79,7 +80,7 @@ func (tx *Transmitter) Transmit(buffer []byte) (n int, err error) {
 
 #### Receiving Data from the UART
 
-When data is received from the serial UART the physical XBee is connected to, send it to gobee.
+When data is received from the serial UART the XBee is connected to, send it to gobee.
 
 ```golang
 ...
@@ -92,9 +93,9 @@ for i := 0; i < n; i++ {
 ...
 ```
 
-#### Receiving API Frames from gobee
+#### Receiving Data Frames from gobee
 
-Your implemented XBeeReceiver will get called when completed API frames are received.
+Your implemented XBeeReceiver will get called when completed API frames are received.  gobee validates the received API frame and reports the data frame via the XBeeReceiver interface.
 
 ```golang
 func (r *Receiver) Receive(f rx.RxFrame) error {

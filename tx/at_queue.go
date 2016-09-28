@@ -23,6 +23,7 @@ func (f *ATQueue) Bytes() ([]byte, error) {
 	}
 
 	var b bytes.Buffer
+
 	b.WriteByte(atQueueAPIID)
 	b.WriteByte(f.ID)
 	b.Write(f.Command)

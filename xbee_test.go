@@ -43,7 +43,7 @@ func validateAT(t *testing.T, f *rx.AT) {
 func TestXBee_TX_AT(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	var at = &tx.AT{
 		ID:        0x01,
@@ -79,7 +79,7 @@ func TestXBee_TX_AT(t *testing.T) {
 func TestXBee_TX_AT_QUEUE(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	var at = &tx.ATQueue{
 		ID:        0x01,
@@ -114,7 +114,7 @@ func TestXBee_TX_AT_QUEUE(t *testing.T) {
 func TestXBee_RX_AT(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	// a valid AT command response
 	response := []byte{
@@ -137,7 +137,7 @@ func TestXBee_RX_AT(t *testing.T) {
 func TestXBee_RX_AT_Escape(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	err := xbee.SetAPIMode(2)
 	if err != nil {
@@ -161,7 +161,7 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 func TestXBee_TX_Escape_Length(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	err := xbee.SetAPIMode(2)
 	if err != nil {
@@ -186,7 +186,7 @@ func TestXBee_TX_Escape_Length(t *testing.T) {
 func TestXBee_TX_Escape_Checksum(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	err := xbee.SetAPIMode(2)
 	if err != nil {
@@ -207,7 +207,7 @@ func TestXBee_TX_Escape_Checksum(t *testing.T) {
 func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	err := xbee.SetAPIMode(3)
 	if err == nil {
@@ -233,7 +233,7 @@ func mockFrameFactoryFunc() rx.Frame {
 func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	unknownFrame := []byte{0x7E, 0x00, 0x10, 0xFF}
 
@@ -252,7 +252,7 @@ func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
 func TestXBee_RX_Invalid_Frame_Delimiter(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	err := xbee.RX(0x7D)
 	if err == nil {
@@ -263,7 +263,7 @@ func TestXBee_RX_Invalid_Frame_Delimiter(t *testing.T) {
 func TestXBee_RX_Invalid_Checksum(t *testing.T) {
 	transmitter := &Transmitter{}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewXBee(transmitter, receiver)
+	xbee := gobee.New(transmitter, receiver)
 
 	bad_checksum := []byte{
 		0x7e, 0x00, 0x0f, 0x97, 0x02, 0x00, 0x13, 0xa2, 0x00,

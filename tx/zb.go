@@ -18,7 +18,7 @@ type ZB struct {
 
 // Bytes turn ATRemote frame into bytes
 func (f *ZB) Bytes() ([]byte, error) {
-	b := new(bytes.Buffer)
+	var b bytes.Buffer
 
 	b.WriteByte(zbAPIID)
 	b.WriteByte(f.ID)
