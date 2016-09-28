@@ -26,7 +26,7 @@ const xon byte = 0x11
 const xoff byte = 0x13
 
 // escChar the character used to escape charters needing escaping
-const sscChar = 0x20
+const escChar = 0x20
 
 // BroadcastAddr64 64-bit broadcast address
 const BroadcastAddr64 uint64 = 0x000000000000FFFF
@@ -77,7 +77,7 @@ type XBee struct {
 }
 
 // NewXBee constructor of XBee's
-func NewXBee(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
+func New(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
 	return &XBee{
 		transmitter:              transmitter,
 		receiver:                 receiver,
@@ -198,7 +198,7 @@ func shouldEscape(b byte) bool {
 }
 
 func escape(b byte) byte {
-	return (b ^ sscChar)
+	return (b ^ escChar)
 }
 
 func (x *XBee) isAPIEscapeModeEnabled() bool {
