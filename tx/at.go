@@ -2,35 +2,61 @@ package tx
 
 import (
 	"bytes"
-	"errors"
 )
 
 const atAPIID byte = 0x08
 
 var _ Frame = (*AT)(nil)
 
+// NewATBuilder builder of AT frames
+func NewATBuilder() *atID {
+	return &atID{}
+}
+
+type atID struct {
+	buffer bytes.Buffer
+}
+
+func (b *atID) ID(id byte) *atCommand {
+	b.buffer.WriteByte(atAPIID)
+	b.buffer.WriteByte(id)
+	return &atCommand{buffer: b.buffer}
+}
+
+type atCommand struct {
+	buffer bytes.Buffer
+}
+
+func (b *atCommand) Command(command [2]byte) *atParameter {
+	b.buffer.Write(command[:])
+	return &atParameter{buffer: b.buffer}
+}
+
+type atParameter struct {
+	buffer bytes.Buffer
+}
+
+func (b *atParameter) Parameter(parameter *byte) *atBuilder {
+	if parameter != nil {
+		b.buffer.WriteByte(*parameter)
+	}
+	return &atBuilder{buffer: b.buffer}
+}
+
+type atBuilder struct {
+	buffer bytes.Buffer
+}
+
+func (b *atBuilder) Build() *AT {
+	return &AT{buffer: b.buffer}
+}
+
 // AT transmit frame
 type AT struct {
-	ID        byte
-	Command   []byte
-	Parameter []byte
+	buffer bytes.Buffer
 }
 
 // Bytes turn AT frame into bytes
 func (f *AT) Bytes() ([]byte, error) {
-	if len(f.Command) != 2 {
-		return nil, errors.New("Invalid AT command")
-	}
-
-	var b bytes.Buffer
-
-	b.WriteByte(atAPIID)
-	b.WriteByte(f.ID)
-	b.Write(f.Command)
-
-	if len(f.Parameter) != 0 {
-		b.Write(f.Parameter)
-	}
-
-	return b.Bytes(), nil
+	return f.buffer.Bytes(), nil
 }
