@@ -5,6 +5,7 @@ import (
 	"github.com/pauleyj/gobee/rx"
 	"github.com/pauleyj/gobee/tx"
 	"testing"
+	"fmt"
 )
 
 func addressOf(b byte) *byte { return &b }
@@ -14,7 +15,12 @@ type Transmitter struct {
 	expected []byte
 }
 
-func (xm *Transmitter) Transmit(p []byte) (n int, err error) {
+func (xm *Transmitter) Transmit(p []byte) (int, error) {
+	msg := fmt.Sprintf("TX (len = %4d)", len(p))
+	for _, b := range p {
+		msg = fmt.Sprintf("%s 0x%02x", msg, b)
+	}
+	xm.t.Log(msg)
 	return len(p), nil
 }
 
@@ -43,7 +49,7 @@ func validateAT(t *testing.T, f *rx.AT) {
 }
 
 func TestXBee_TX_AT(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
@@ -62,7 +68,7 @@ func TestXBee_TX_AT(t *testing.T) {
 }
 
 func TestXBee_TX_AT_QUEUE(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
@@ -81,7 +87,7 @@ func TestXBee_TX_AT_QUEUE(t *testing.T) {
 }
 
 func TestXBee_RX_AT(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
@@ -104,7 +110,7 @@ func TestXBee_RX_AT(t *testing.T) {
 }
 
 func TestXBee_RX_AT_Escape(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.NewWithEscapeMode(transmitter, receiver, gobee.EscapeModeActive)
 
@@ -123,7 +129,7 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 }
 
 func TestXBee_TX_Escape_Length(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.NewWithEscapeMode(transmitter, receiver, gobee.EscapeModeActive)
 
@@ -140,7 +146,7 @@ func TestXBee_TX_Escape_Length(t *testing.T) {
 }
 
 func TestXBee_TX_Escape_Checksum(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.NewWithEscapeMode(transmitter, receiver, gobee.EscapeModeActive)
 
@@ -152,7 +158,7 @@ func TestXBee_TX_Escape_Checksum(t *testing.T) {
 }
 
 func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
@@ -163,7 +169,7 @@ func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
 }
 
 func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
@@ -182,7 +188,7 @@ func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
 }
 
 func TestXBee_RX_Invalid_Frame_Delimiter(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
@@ -193,7 +199,7 @@ func TestXBee_RX_Invalid_Frame_Delimiter(t *testing.T) {
 }
 
 func TestXBee_RX_Invalid_Checksum(t *testing.T) {
-	transmitter := &Transmitter{}
+	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 

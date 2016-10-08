@@ -6,7 +6,6 @@ import (
 	"github.com/pauleyj/gobee/rx"
 	"github.com/pauleyj/gobee/tx"
 	"encoding/binary"
-	"log"
 )
 
 // frameDelimiter start API frame delimiter, requires escaping in mode 2
@@ -119,8 +118,6 @@ func NewWithEscapeMode(transmitter XBeeTransmitter, receiver XBeeReceiver, mode 
 
 // RX bytes received from the serial communications port are sent here
 func (x *XBee) RX(b byte) error {
-	var err error
-
 	if x.isAPIEscapeModeEnabled() {
 		if x.rxState != frameStart && b == esc && !x.escapeNext {
 			x.escapeNext = true
@@ -128,12 +125,16 @@ func (x *XBee) RX(b byte) error {
 		}
 
 		if x.escapeNext {
-			log.Println("RX escaping")
 			x.escapeNext = false
-			b = x.escape(b)
+			b = escape(b)
 		}
 	}
 
+	return x.handleRX(b)
+}
+
+func (x *XBee) handleRX(b byte) error {
+	var err error
 	switch x.rxState {
 	case frameLength:
 		err = x.apiStateDataLength(b)
@@ -149,6 +150,7 @@ func (x *XBee) RX(b byte) error {
 	default:
 		err = x.apiStateWaitFrameDelimiter(b)
 	}
+
 	return err
 }
 
@@ -161,58 +163,19 @@ func (x *XBee) TX(frame tx.Frame) (int, error) {
 	}
 
 	var b bytes.Buffer
-
 	b.WriteByte(frameDelimiter)
-	b.Write(x.escapeBuffer(uint16ToBytes(uint16(len(f)))))
-	b.Write(x.escapeBuffer(f))
-	b.WriteByte(x.escape(checksum(f)))
+	b.Write(uint16ToBytes(uint16(len(f))))
+	b.Write(f)
+	b.WriteByte(checksum(f))
 
-	//lh := byte(l >> 8)
-	//ll := byte(l & 0x00FF)
-	//if x.isAPIEscapeModeEnabled() {
-	//	if shouldEscape(lh) {
-	//		lh = escape(lh)
-	//		b.WriteByte(esc)
-	//	}
-	//	if shouldEscape(ll) {
-	//		ll = escape(ll)
-	//		b.WriteByte(esc)
-	//	}
-	//}
-	//b.WriteByte(lh)
-	//b.WriteByte(ll)
-	//
-	//for _, i := range f {
-	//	// checksum is calculated on pre escaped value
-	//	checksum += i
-	//
-	//	if x.isAPIEscapeModeEnabled() && shouldEscape(i) {
-	//		i = escape(i)
-	//		b.WriteByte(esc)
-	//	}
-	//
-	//	b.WriteByte(i)
-	//}
-	//
-	//checksum = validChecksum - checksum
-	//
-	//// checksum is escaped if needed
-	//if x.isAPIEscapeModeEnabled() && shouldEscape(checksum) {
-	//	checksum = escape(checksum)
-	//	b.WriteByte(esc)
-	//}
-	//b.WriteByte(checksum)
-
-	return x.transmitter.Transmit(b.Bytes())
-}
-
-
-func checksum(buff []byte) byte {
-	var c byte
-	for _, b := range buff {
-		c += b
+	var i int
+	if x.apiMode == EscapeModeInactive {
+		i, err = x.transmitter.Transmit(b.Bytes())
+	} else {
+		i, err = x.transmitter.Transmit(escapeTXBuffer(b.Bytes()))
 	}
-	return validChecksum - c
+
+	return i, err
 }
 
 // SetAPIMode sets the API mode so goobe knows to escape or not
@@ -224,22 +187,28 @@ func (x *XBee) SetAPIMode(mode APIEscapeMode) error {
 	return nil
 }
 
-func (x *XBee) escapeBuffer(buffer []byte) []byte {
-	if x.apiMode == EscapeModeInactive {
-		return buffer
+func escapeTXBuffer(b []byte) []byte {
+	var e bytes.Buffer
+	for i, c := range b {
+		if i != 0 && shouldEscape(c) {
+			c = escape(c)
+			e.WriteByte(escChar)
+		}
+		e.WriteByte(c)
 	}
 
-	var b bytes.Buffer
-	for _, c := range buffer {
-		if(shouldEscape(c)) {
-			c = x.escape(c)
-		}
-		b.WriteByte(c)
-	}
-	return b.Bytes()
+	return e.Bytes()
 }
 
-func (x *XBee) escape(b byte) byte {
+func checksum(buff []byte) byte {
+	var c byte
+	for _, b := range buff {
+		c += b
+	}
+	return validChecksum - c
+}
+
+func escape(b byte) byte {
 	return b ^ escChar
 }
 
