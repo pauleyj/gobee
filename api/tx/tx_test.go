@@ -1,8 +1,51 @@
 package tx
 
-import "testing"
+import (
+	"github.com/pauleyj/gobee/api"
+	"testing"
+)
 
 func addressOf(b byte) *byte { return &b }
+
+func Test_API_Frame(t *testing.T) {
+	at := NewATBuilder().
+		ID(0x01).
+		Command([2]byte{'N', 'I'}).
+		Parameter(nil).
+		Build()
+
+	api := &APIFrame{Mode: api.EscapeModeInactive}
+
+	actual, err := api.Bytes(at)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	if len(actual) != 8 {
+		t.Error("Expected length of 8, got %d", len(actual))
+	}
+}
+
+func Test_API_Frame_WithEscape(t *testing.T) {
+	fakeParam := make([]byte, 0)
+	for i := 0; i < 0x110D; i++ {
+		fakeParam = append(fakeParam, 0)
+	}
+
+	zb := NewZBBuilder().
+		ID(0x01).
+		Addr64(0).
+		Addr16(0).
+		BroadcastRadius(0).
+		Options(0).
+		Data(fakeParam).
+		Build()
+
+	api := &APIFrame{Mode: api.EscapeModeActive}
+	_, err := api.Bytes(zb)
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+	}
+}
 
 func Test_Valid_AT_No_Param(t *testing.T) {
 	at := NewATBuilder().

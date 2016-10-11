@@ -2,8 +2,86 @@ package rx
 
 import (
 	"bytes"
+	"github.com/pauleyj/gobee/api"
 	"testing"
 )
+
+func Test_API_Frame(t *testing.T) {
+	// a valid AT command response
+	response := []byte{
+		0x7e, 0x00, 0x18, 0x88,
+		0x01, 0x4e, 0x49, 0x00,
+		0x20, 0x5a, 0x69, 0x67,
+		0x42, 0x65, 0x65, 0x20,
+		0x43, 0x6f, 0x6f, 0x72,
+		0x64, 0x69, 0x6e, 0x61,
+		0x74, 0x6f, 0x72, 0xe5}
+
+	api := &APIFrame{
+		Mode: api.EscapeModeInactive,
+	}
+
+	for _, c := range response {
+		f, err := api.RX(c)
+		if err != nil {
+			t.Errorf("Expected no error, but got: %v", err)
+		}
+		if f != nil {
+			_, ok := f.(*AT)
+			if !ok {
+				t.Error("Failed type assertion")
+			}
+		}
+	}
+}
+
+func Test_API_Frame_With_Escape(t *testing.T) {
+	// a valid AT command response with escaped bytes
+	response := []byte{
+		0x7e, 0x00, 0x06, 0x88,
+		0x01, 0x4e, 0x49, 0x00,
+		0x7D, 0x31, 0xce}
+
+	api := &APIFrame{
+		Mode: api.EscapeModeActive,
+	}
+
+	for _, c := range response {
+		f, err := api.RX(c)
+		if err != nil {
+			t.Errorf("Expected no error, but got: %v", err)
+		}
+		if f != nil {
+			_, ok := f.(*AT)
+			if !ok {
+				t.Error("Failed type assertion")
+			}
+		}
+	}
+}
+
+func Test_API_Frame_Invalid_Checksum(t *testing.T) {
+	bad_checksum := []byte{
+		0x7e, 0x00, 0x0f, 0x97, 0x02, 0x00, 0x13, 0xa2, 0x00,
+		0x40, 0x32, 0x03, 0xcf, 0x00, 0x00, 0x41, 0x4f, 0x00,
+		0xd0,
+	}
+	api := &APIFrame{
+		Mode: api.EscapeModeActive,
+	}
+
+	for i, c := range bad_checksum {
+		_, err := api.RX(c)
+		if i == 18 {
+
+			if err == nil {
+				t.Error("Expected error, but got none")
+			}
+		} else if err != nil {
+			t.Errorf("Expected no error, but got: %v", err)
+		}
+	}
+}
 
 func Test_AT(t *testing.T) {
 	// at command response frame data
