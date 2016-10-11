@@ -47,15 +47,14 @@ xbee        := gobee.New(transmitter, receiver)
 
 #### Transmitting a Data Frame
 
-When sending a frame, construct and hand it to gobee to generate an API frame.  gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
+When sending a frame, construct frame using the appropriate frame builder and hand it to gobee to generate an API frame.  gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
 
 ```golang
-at := &tx.AT {
-	ID: 1,
-	Command: []byte{'A','O'},
-	Paramerer: []{1},
-}
-
+at := tx.NewATBuilder().
+		ID(1).
+		Command([2]byte{'A','O'}).
+		Parameter(addressOf(1)).
+		Build()
 _, err := xbee.TX(at)
 ...
 ```

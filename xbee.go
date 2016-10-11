@@ -12,14 +12,6 @@ const BroadcastAddr64 uint64 = 0x000000000000FFFF
 // BriadcastAddr16 16-bit broadcast address
 const BroadcastAddr16 uint16 = 0xFFFE
 
-//// api.APIEscapeMode defines the XBee API escape mode type
-//type api.APIEscapeMode byte
-//
-//const (
-//	EscapeModeInactive = api.APIEscapeMode(1)
-//	EscapeModeActive = api.APIEscapeMode(2)
-//)
-
 // XBeeTransmitter used to transmit API frame bytes to serial communications port
 type XBeeTransmitter interface {
 	Transmit([]byte) (int, error)
