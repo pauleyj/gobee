@@ -7,9 +7,10 @@ import (
 
 // APIFrame defines an API frame structure
 type APIFrame struct {
-	Mode api.APIEscapeMode
+	Mode api.EscapeMode
 }
 
+// Bytes transforms a data frame into an API frame slice
 func (f *APIFrame) Bytes(frame Frame) ([]byte, error) {
 	p, err := frame.Bytes()
 	if err != nil {
@@ -29,9 +30,8 @@ func (f *APIFrame) Bytes(frame Frame) ([]byte, error) {
 func (f *APIFrame) encode(p ...byte) []byte {
 	if f.Mode == api.EscapeModeInactive {
 		return slicify(p...)
-	} else {
-		return escape(p...)
 	}
+	return escape(p...)
 }
 
 func escape(p ...byte) []byte {

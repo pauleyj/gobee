@@ -36,6 +36,7 @@ var (
 // State the API frame state type
 type State int
 
+// Frame states
 const (
 	FrameStart    = State(iota)
 	FrameLength   = State(iota)
@@ -44,12 +45,13 @@ const (
 	FrameChecksum = State(iota)
 )
 
-// APIEscapeMode defines the XBee API escape mode type
-type APIEscapeMode byte
+// EscapeMode defines the XBee API escape mode type
+type EscapeMode byte
 
+// Escape modes
 const (
-	EscapeModeInactive = APIEscapeMode(1)
-	EscapeModeActive   = APIEscapeMode(2)
+	EscapeModeInactive = EscapeMode(1)
+	EscapeModeActive   = EscapeMode(2)
 )
 
 // ShouldEscape should this byte be escaped

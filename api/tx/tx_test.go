@@ -26,7 +26,7 @@ func Test_API_Frame(t *testing.T) {
 }
 
 func Test_API_Frame_WithEscape(t *testing.T) {
-	fakeParam := make([]byte, 0)
+	var fakeParam []byte
 	for i := 0; i < 0x110D; i++ {
 		fakeParam = append(fakeParam, 0)
 	}

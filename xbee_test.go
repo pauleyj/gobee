@@ -163,7 +163,7 @@ func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
-	err := xbee.SetAPIMode(api.APIEscapeMode(3))
+	err := xbee.SetAPIMode(api.EscapeMode(3))
 	if err == nil {
 		t.Error("Expected error, but got none")
 	}

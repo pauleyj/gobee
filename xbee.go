@@ -26,7 +26,7 @@ type XBeeReceiver interface {
 type XBee struct {
 	transmitter XBeeTransmitter
 	receiver    XBeeReceiver
-	apiMode     api.APIEscapeMode
+	apiMode     api.EscapeMode
 	frame       *rx.APIFrame
 }
 
@@ -41,7 +41,7 @@ func New(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
 }
 
 // NewWithEscapeMode constructor of XBee's with a specific escape mode
-func NewWithEscapeMode(transmitter XBeeTransmitter, receiver XBeeReceiver, mode api.APIEscapeMode) *XBee {
+func NewWithEscapeMode(transmitter XBeeTransmitter, receiver XBeeReceiver, mode api.EscapeMode) *XBee {
 	return &XBee{
 		transmitter: transmitter,
 		receiver:    receiver,
@@ -77,7 +77,7 @@ func (x *XBee) TX(frame tx.Frame) (int, error) {
 }
 
 // SetAPIMode sets the API mode so goobe knows to escape or not
-func (x *XBee) SetAPIMode(mode api.APIEscapeMode) error {
+func (x *XBee) SetAPIMode(mode api.EscapeMode) error {
 	if mode != api.EscapeModeInactive && mode != api.EscapeModeActive {
 		return api.ErrInvalidAPIEscapeMode
 	}

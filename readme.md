@@ -53,7 +53,7 @@ When sending a frame, construct frame using the appropriate frame builder and ha
 at := tx.NewATBuilder().
 		ID(1).
 		Command([2]byte{'A','O'}).
-		Parameter(addressOf(1)).
+		Parameter(nil).
 		Build()
 _, err := xbee.TX(at)
 ...

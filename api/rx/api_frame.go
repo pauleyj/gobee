@@ -6,7 +6,7 @@ import (
 
 // APIFrame defines an RX API frame
 type APIFrame struct {
-	Mode  api.APIEscapeMode
+	Mode  api.EscapeMode
 	state state
 	frame Frame
 }
