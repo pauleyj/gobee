@@ -9,7 +9,7 @@ import (
 // BroadcastAddr64 64-bit broadcast address
 const BroadcastAddr64 uint64 = 0x000000000000FFFF
 
-// BriadcastAddr16 16-bit broadcast address
+// BroadcastAddr16 16-bit broadcast address
 const BroadcastAddr16 uint16 = 0xFFFE
 
 // XBeeTransmitter used to transmit API frame bytes to serial communications port
@@ -40,6 +40,7 @@ func New(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
 	}
 }
 
+// NewWithEscapeMode constructor of XBee's with a specific escape mode
 func NewWithEscapeMode(transmitter XBeeTransmitter, receiver XBeeReceiver, mode api.APIEscapeMode) *XBee {
 	return &XBee{
 		transmitter: transmitter,
@@ -78,7 +79,7 @@ func (x *XBee) TX(frame tx.Frame) (int, error) {
 // SetAPIMode sets the API mode so goobe knows to escape or not
 func (x *XBee) SetAPIMode(mode api.APIEscapeMode) error {
 	if mode != api.EscapeModeInactive && mode != api.EscapeModeActive {
-		return api.ErrInvalidAPIMode
+		return api.ErrInvalidAPIEscapeMode
 	}
 	x.apiMode = mode
 	return nil

@@ -21,7 +21,7 @@ func Test_API_Frame(t *testing.T) {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
 	if len(actual) != 8 {
-		t.Error("Expected length of 8, got %d", len(actual))
+		t.Errorf("Expected length of 8, got %d", len(actual))
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 	"github.com/pauleyj/gobee/api"
 )
 
-// APIFrame
+// APIFrame defines an API frame structure
 type APIFrame struct {
 	Mode api.APIEscapeMode
 }

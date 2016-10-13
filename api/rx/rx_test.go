@@ -61,7 +61,7 @@ func Test_API_Frame_With_Escape(t *testing.T) {
 }
 
 func Test_API_Frame_Invalid_Checksum(t *testing.T) {
-	bad_checksum := []byte{
+	badChecksum := []byte{
 		0x7e, 0x00, 0x0f, 0x97, 0x02, 0x00, 0x13, 0xa2, 0x00,
 		0x40, 0x32, 0x03, 0xcf, 0x00, 0x00, 0x41, 0x4f, 0x00,
 		0xd0,
@@ -70,7 +70,7 @@ func Test_API_Frame_Invalid_Checksum(t *testing.T) {
 		Mode: api.EscapeModeActive,
 	}
 
-	for i, c := range bad_checksum {
+	for i, c := range badChecksum {
 		_, err := api.RX(c)
 		if i == 18 {
 
@@ -144,19 +144,19 @@ func Test_ZB(t *testing.T) {
 	}
 
 	if f.Addr64() != 0x0013A200403203AB {
-		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013A200403203AB, f.Addr64)
+		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013A200403203AB, f.Addr64())
 	}
 
 	if f.Addr16() != 0x5FD6 {
-		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x5FD6, f.Addr16)
+		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x5FD6, f.Addr16())
 	}
 
 	if f.Options() != 0x01 {
-		t.Errorf("Expected Options to be 0x%02X, but got 0x%02X", 0x01, f.Options)
+		t.Errorf("Expected Options to be 0x%02X, but got 0x%02X", 0x01, f.Options())
 	}
 
 	if !bytes.Equal(f.Data(), []byte{'f', 'o', 'o'}) {
-		t.Errorf("Expected Data: %v, but got %v", []byte{'f', 'o', 'o'}, f.Data)
+		t.Errorf("Expected Data: %v, but got %v", []byte{'f', 'o', 'o'}, f.Data())
 	}
 }
 
@@ -186,35 +186,35 @@ func Test_ZB_Explicit(t *testing.T) {
 	}
 
 	if f.Addr64() != 0x0013A200403203AB {
-		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013A200403203AB, f.Addr64)
+		t.Errorf("Expected Addr64 to be 0x%016X, but got 0x%016X", 0x0013A200403203AB, f.Addr64())
 	}
 
 	if f.Addr16() != 0x5FD6 {
-		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x5FD6, f.Addr16)
+		t.Errorf("Expected Addr16 to be 0x%04X, but got 0x%04X", 0x5FD6, f.Addr16())
 	}
 
 	if f.SrcEP() != 0xCD {
-		t.Errorf("Expected SrcEP to be 0x%02X, but got 0x%02X", 0xCD, f.SrcEP)
+		t.Errorf("Expected SrcEP to be 0x%02X, but got 0x%02X", 0xCD, f.SrcEP())
 	}
 
 	if f.DstEP() != 0x01 {
-		t.Errorf("Expected DstEP to be 0x%02X, but got 0x%02X", 0x01, f.DstEP)
+		t.Errorf("Expected DstEP to be 0x%02X, but got 0x%02X", 0x01, f.DstEP())
 	}
 
 	if f.ClusterID() != 0x0054 {
-		t.Errorf("Expected ClusterID to be 0x%04X, but got 0x%04X", 0x54C1, f.ClusterID)
+		t.Errorf("Expected ClusterID to be 0x%04X, but got 0x%04X", 0x54C1, f.ClusterID())
 	}
 
 	if f.ProfileID() != 0xC105 {
-		t.Errorf("Expected ProfileID to be 0x%04X, but got 0x%04X", 0x0501, f.ProfileID)
+		t.Errorf("Expected ProfileID to be 0x%04X, but got 0x%04X", 0x0501, f.ProfileID())
 	}
 
 	if f.Options() != 0x01 {
-		t.Errorf("Expected Options to be 0x%02X, but got 0x%02X", 0x01, f.Options)
+		t.Errorf("Expected Options to be 0x%02X, but got 0x%02X", 0x01, f.Options())
 	}
 
 	if !bytes.Equal(f.Data(), []byte{'f', 'o', 'o'}) {
-		t.Errorf("Expected Data: %v, but got %v", []byte{'f', 'o', 'o'}, f.Data)
+		t.Errorf("Expected Data: %v, but got %v", []byte{'f', 'o', 'o'}, f.Data())
 	}
 }
 

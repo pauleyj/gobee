@@ -4,6 +4,7 @@ import (
 	"github.com/pauleyj/gobee/api"
 )
 
+// APIFrame defines an RX API frame
 type APIFrame struct {
 	Mode  api.APIEscapeMode
 	state state
@@ -18,6 +19,7 @@ type state struct {
 	chechsum uint8
 }
 
+// RX receive byte
 func (f *APIFrame) RX(c byte) (Frame, error) {
 	if f.Mode == api.EscapeModeActive {
 

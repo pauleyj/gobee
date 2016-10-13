@@ -5,10 +5,10 @@ import "errors"
 // FrameDelimiter start API frame delimiter, requires escaping in mode 2
 const FrameDelimiter byte = 0x7E
 
-// dataLengthBytes Number of data length bytes
+// FrameLengthByteCount Number of data length bytes
 const FrameLengthByteCount uint16 = 2
 
-// validChecksum API frame valid checksum
+// ValidChecksum API frame valid checksum
 const ValidChecksum byte = 0xFF
 
 // ESC the escape character
@@ -20,14 +20,17 @@ const xon byte = 0x11
 // xoff XOFF character, requires escaping in mode 2
 const xoff byte = 0x13
 
-// EscChar the character used to escape charters needing escaping
+// ESCChar the character used to escape charters needing escaping
 const ESCChar byte = 0x20
 
 var (
 	escapeSet             = [...]byte{FrameDelimiter, ESC, xon, xoff}
+	// ErrChecksumValidation frame failed checksum validation
 	ErrChecksumValidation = errors.New("Frame failed checksum validation")
+	// ErrFrameDelimiter expecting frame start delimiter
 	ErrFrameDelimiter     = errors.New("Expected frame delimiter")
-	ErrInvalidAPIMode     = errors.New("Invalid API mode")
+	// ErrInvalidAPIEscapeMode invalid API escape mode
+	ErrInvalidAPIEscapeMode = errors.New("Invalid API escape mode")
 )
 
 // State the API frame state type
@@ -49,10 +52,12 @@ const (
 	EscapeModeActive   = APIEscapeMode(2)
 )
 
+// ShouldEscape should this byte be escaped
 func ShouldEscape(c byte) bool {
 	return include(escapeSet[:], c)
 }
 
+// Escape escape this byte
 func Escape(c byte) byte {
 	return c ^ ESCChar
 }
