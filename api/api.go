@@ -24,11 +24,11 @@ const xoff byte = 0x13
 const ESCChar byte = 0x20
 
 var (
-	escapeSet             = [...]byte{FrameDelimiter, ESC, xon, xoff}
+	escapeSet = [...]byte{FrameDelimiter, ESC, xon, xoff}
 	// ErrChecksumValidation frame failed checksum validation
 	ErrChecksumValidation = errors.New("Frame failed checksum validation")
 	// ErrFrameDelimiter expecting frame start delimiter
-	ErrFrameDelimiter     = errors.New("Expected frame delimiter")
+	ErrFrameDelimiter = errors.New("Expected frame delimiter")
 	// ErrInvalidAPIEscapeMode invalid API escape mode
 	ErrInvalidAPIEscapeMode = errors.New("Invalid API escape mode")
 )
