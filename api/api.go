@@ -24,7 +24,12 @@ const xoff byte = 0x13
 const ESCChar byte = 0x20
 
 var (
-	escapeSet = [...]byte{FrameDelimiter, ESC, xon, xoff}
+	escapeSet = map[byte]struct{}{
+		FrameDelimiter: {},
+		ESC:            {},
+		xon:            {},
+		xoff:           {},
+	}
 	// ErrChecksumValidation frame failed checksum validation
 	ErrChecksumValidation = errors.New("Frame failed checksum validation")
 	// ErrFrameDelimiter expecting frame start delimiter
@@ -56,25 +61,11 @@ const (
 
 // ShouldEscape should this byte be escaped
 func ShouldEscape(c byte) bool {
-	return include(escapeSet[:], c)
+	_, ok := escapeSet[c]
+	return ok
 }
 
 // Escape escape this byte
 func Escape(c byte) byte {
 	return c ^ ESCChar
-}
-
-// index returns the first index of the target byte t, or -1 if no match is found
-func index(vc []byte, c byte) int {
-	for i, v := range vc {
-		if v == c {
-			return i
-		}
-	}
-	return -1
-}
-
-// include returns true if the target byte t is in the slice.
-func include(vc []byte, c byte) bool {
-	return index(vc, c) >= 0
 }
