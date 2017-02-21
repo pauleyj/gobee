@@ -38,7 +38,7 @@ func escape(p ...byte) []byte {
 	var b bytes.Buffer
 	for _, c := range p {
 		if api.ShouldEscape(c) {
-			b.WriteByte(api.ESCChar)
+			b.WriteByte(api.ESC)
 			b.WriteByte(api.Escape(c))
 		} else {
 			b.WriteByte(c)
