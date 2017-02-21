@@ -1,8 +1,9 @@
 package tx
 
 import (
-	"github.com/pauleyj/gobee/api"
 	"testing"
+
+	"github.com/pauleyj/gobee/api"
 )
 
 func addressOf(b byte) *byte { return &b }
@@ -44,6 +45,46 @@ func Test_API_Frame_WithEscape(t *testing.T) {
 	_, err := api.Bytes(zb)
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
+	}
+}
+
+type dummyFrame struct {
+	data []byte
+}
+
+func (f *dummyFrame) Bytes() ([]byte, error) {
+	return f.data, nil
+}
+
+func Test_API_Frame_ZDO_WithEscape(t *testing.T) {
+	input := []byte{
+		zbExplicitAPIID,                                // frame type
+		0x01,                                           // frame ID
+		0x00, 0x13, 0xA2, 0x00, 0x41, 0x53, 0x1D, 0x4F, // dst 64-bit
+		0x00, 0x00, // dst 16-bit
+		0x00, 0x00, // src + dst endpoints
+		0x00, 0x31, // cluster ID
+		0x00, 0x00, // profile ID
+		0x00,       // broadcastRadius
+		0x00,       // options
+		0x10, 0x00, // payload
+	}
+
+	fakeFrame := &dummyFrame{input}
+	expected := []byte{
+		0x7E, 0x00, 0x18, 0x7D, 0x31, 0x01, 0x00, 0x7D, 0x33, 0xA2, 0x00, 0x41,
+		0x53, 0x1D, 0x4F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x31, 0x00, 0x00, 0x00,
+		0x00, 0x01, 0x00, 0x06,
+	}
+
+	api := &APIFrame{Mode: api.EscapeModeActive}
+	result, err := api.Bytes(fakeFrame)
+	if err != nil {
+		t.Fatalf("Expected no error, but got %v", err)
+	}
+	if len(expected) != len(result) {
+		t.Logf("\nexpected=% #v\n\n  result=% #v\n", expected, result)
+		t.Fatalf("expected len=%d, got len=%d", len(expected), len(result))
 	}
 }
 
