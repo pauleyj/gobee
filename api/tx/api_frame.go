@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	"github.com/pauleyj/gobee/api"
+	"github.com/pauleyj/gobee/api/tx/util"
 )
 
 // APIFrame defines an API frame structure
@@ -20,7 +21,7 @@ func (f *APIFrame) Bytes(frame Frame) ([]byte, error) {
 
 	var b bytes.Buffer
 	b.WriteByte(api.FrameDelimiter)
-	b.Write(f.encode(uint16ToBytes(uint16(len(p)))))
+	b.Write(f.encode(util.Uint16ToBytes(uint16(len(p)))))
 	b.Write(f.encode(p))
 	c := checksum(p)
 	b.Write(f.encode([]byte{c}))

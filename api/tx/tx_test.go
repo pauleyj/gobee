@@ -9,15 +9,12 @@ import (
 func addressOf(b byte) *byte { return &b }
 
 func Test_API_Frame(t *testing.T) {
-	at := NewATBuilder().
-		ID(0x01).
-		Command([2]byte{'N', 'I'}).
-		Parameter(nil).
-		Build()
-
+	// dummy at command
+	input := []byte{0x08,0x01,'N','J'}
+	fakeFrame := &dummyFrame{data: input}
 	api := &APIFrame{Mode: api.EscapeModeInactive}
 
-	actual, err := api.Bytes(at)
+	actual, err := api.Bytes(fakeFrame)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -61,13 +58,13 @@ func Test_API_Frame_ZDO_WithEscape(t *testing.T) {
 		zbExplicitAPIID,                                // frame type
 		0x01,                                           // frame ID
 		0x00, 0x13, 0xA2, 0x00, 0x41, 0x53, 0x1D, 0x4F, // dst 64-bit
-		0x00, 0x00, // dst 16-bit
-		0x00, 0x00, // src + dst endpoints
-		0x00, 0x31, // cluster ID
-		0x00, 0x00, // profile ID
-		0x00,       // broadcastRadius
-		0x00,       // options
-		0x10, 0x00, // payload
+		0x00, 0x00,                                     // dst 16-bit
+		0x00, 0x00,                                     // src + dst endpoints
+		0x00, 0x31,                                     // cluster ID
+		0x00, 0x00,                                     // profile ID
+		0x00,                                           // broadcastRadius
+		0x00,                                           // options
+		0x10, 0x00,                                     // payload
 	}
 
 	fakeFrame := &dummyFrame{input}
@@ -85,152 +82,6 @@ func Test_API_Frame_ZDO_WithEscape(t *testing.T) {
 	if len(expected) != len(result) {
 		t.Logf("\nexpected=% #v\n\n  result=% #v\n", expected, result)
 		t.Fatalf("expected len=%d, got len=%d", len(expected), len(result))
-	}
-}
-
-func Test_Valid_AT_No_Param(t *testing.T) {
-	at := NewATBuilder().
-		ID(0x01).
-		Command([2]byte{'N', 'I'}).
-		Parameter(nil).
-		Build()
-
-	actual, err := at.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 4 {
-		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{atAPIID, 1, 'N', 'I'}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
-	}
-}
-
-func Test_Valid_AT_With_Param(t *testing.T) {
-	at := NewATBuilder().
-		ID(0x01).
-		Command([2]byte{'N', 'I'}).
-		Parameter(addressOf(1)).
-		Build()
-
-	actual, err := at.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 5 {
-		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{atAPIID, 1, 'N', 'I', 1}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
-	}
-}
-
-func Test_Valid_AT_REMOTE_No_Param(t *testing.T) {
-	at := NewATRemoteBuilder().
-		ID(0x01).
-		Addr64(0x000000000000FFFF).
-		Addr16(0xFFFE).
-		Options(0x00).
-		Command([2]byte{'A', 'O'}).
-		Parameter(nil).
-		Build()
-
-	actual, err := at.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 15 {
-		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{atRemoteAPIID, 1, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 'A', 'O'}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
-	}
-}
-
-func Test_Valid_AT_REMOTE_With_Param(t *testing.T) {
-	at := NewATRemoteBuilder().
-		ID(0x01).
-		Addr64(0x000000000000FFFF).
-		Addr16(0xFFFE).
-		Options(0x00).
-		Command([2]byte{'A', 'O'}).
-		Parameter(addressOf(0x01)).
-		Build()
-
-	actual, err := at.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 16 {
-		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{atRemoteAPIID, 1, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 'A', 'O', 0x01}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
-	}
-}
-
-func Test_Valid_AT_QUEUE_No_Param(t *testing.T) {
-	at := NewATQueueBuilder().
-		ID(0x01).
-		Command([2]byte{'N', 'I'}).
-		Parameter(nil).
-		Build()
-
-	actual, err := at.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 4 {
-		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{atQueueAPIID, 1, 'N', 'I'}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
-	}
-}
-
-func Test_Valid_AT_QUEUE_With_Param(t *testing.T) {
-	at := NewATQueueBuilder().
-		ID(0x01).
-		Command([2]byte{'N', 'I'}).
-		Parameter(addressOf(0x00)).
-		Build()
-
-	actual, err := at.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 5 {
-		t.Errorf("Expected AT frame to be 5 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{atQueueAPIID, 1, 'N', 'I', 0}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
 	}
 }
 

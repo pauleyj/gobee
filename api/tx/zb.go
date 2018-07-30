@@ -28,7 +28,7 @@ type zbAddr64 struct {
 }
 
 func (b *zbAddr64) Addr64(addr uint64) *zbAddr16 {
-	b.buffer.Write(uint64ToBytes(addr))
+	//b.buffer.Write(uint64ToBytes(addr))
 	return &zbAddr16{buffer: b.buffer}
 }
 
@@ -37,7 +37,7 @@ type zbAddr16 struct {
 }
 
 func (b *zbAddr16) Addr16(addr uint16) *zbBroadcastRadius {
-	b.buffer.Write(uint16ToBytes(addr))
+	//b.buffer.Write(uint16ToBytes(addr))
 	return &zbBroadcastRadius{buffer: b.buffer}
 }
 

@@ -28,7 +28,7 @@ type zbExplicitAddr64 struct {
 }
 
 func (b *zbExplicitAddr64) Addr64(addr uint64) *zbExplicitAddr16 {
-	b.buffer.Write(uint64ToBytes(addr))
+	//b.buffer.Write(uint64ToBytes(addr))
 	return &zbExplicitAddr16{buffer: b.buffer}
 }
 
@@ -37,7 +37,7 @@ type zbExplicitAddr16 struct {
 }
 
 func (b *zbExplicitAddr16) Addr16(addr uint16) *zbExplicitSrcEP {
-	b.buffer.Write(uint16ToBytes(addr))
+	//b.buffer.Write(uint16ToBytes(addr))
 	return &zbExplicitSrcEP{buffer: b.buffer}
 }
 
@@ -64,7 +64,7 @@ type zbExplicitClusterID struct {
 }
 
 func (b *zbExplicitClusterID) ClusterID(id uint16) *zbExplicitProfileID {
-	b.buffer.Write(uint16ToBytes(id))
+	//b.buffer.Write(uint16ToBytes(id))
 	return &zbExplicitProfileID{buffer: b.buffer}
 }
 
@@ -73,7 +73,7 @@ type zbExplicitProfileID struct {
 }
 
 func (b *zbExplicitProfileID) ProfileID(id uint16) *zbExplicitBroadcastRadius {
-	b.buffer.Write(uint16ToBytes(id))
+	//b.buffer.Write(uint16ToBytes(id))
 	return &zbExplicitBroadcastRadius{buffer: b.buffer}
 }
 
