@@ -14,6 +14,7 @@ type atTest struct {
 }
 
 var atTests = []atTest{
+	{"AT Queue Default", NewATQueue(), []byte{atQueueAPIID, 0, 0, 0}},
 	{"AT Queue No Param", NewATQueue(FrameID(0x01), Command(tx.NI)), []byte{atQueueAPIID, 1, 'N', 'I'}},
 	{"AT Queue Nil Param", NewATQueue(FrameID(0x01), Command(tx.NI), Parameter(nil)), []byte{atQueueAPIID, 1, 'N', 'I'}},
 	{"AT Queue Empty Param", NewATQueue(FrameID(0x01), Command(tx.NI), Parameter([]byte{})), []byte{atQueueAPIID, 1, 'N', 'I'}},
@@ -33,14 +34,14 @@ func TestAT(t *testing.T) {
 
 				actual, err := tt.input.Bytes()
 				if err != nil {
-					t.Errorf("Expected no error, but got: %v", err)
+					t.Fatalf("Expected no error, but got: %v", err)
 				}
 				if len(actual) != len(tt.expected) {
-					t.Errorf("Expected AT frame to be %d bytes in length, got: %d", len(tt.expected), len(actual))
+					t.Fatalf("Expected AT frame to be %d bytes in length, got: %d", len(tt.expected), len(actual))
 				}
 				for i, b := range actual {
 					if b != tt.expected[i] {
-						t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
+						t.Fatalf("Expected 0x%02x, but got 0x%02x", b, actual[i])
 					}
 				}
 			})

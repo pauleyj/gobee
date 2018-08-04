@@ -35,6 +35,10 @@ func Parameter(parameter []byte) func(*ATQueue) {
 func NewATQueue(options ...func(*ATQueue)) *ATQueue {
 	f := &ATQueue{}
 
+	if options == nil {
+		return f
+	}
+
 	for _, option := range options {
 		option(f)
 	}
@@ -44,8 +48,6 @@ func NewATQueue(options ...func(*ATQueue)) *ATQueue {
 
 // ATQueue queue transmit frame
 type ATQueue struct {
-	buffer bytes.Buffer
-	
 	FrameID   byte
 	Cmd       [2]byte
 	Parameter []byte

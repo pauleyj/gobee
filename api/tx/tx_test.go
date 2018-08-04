@@ -6,45 +6,6 @@ import (
 	"github.com/pauleyj/gobee/api"
 )
 
-func addressOf(b byte) *byte { return &b }
-
-func Test_API_Frame(t *testing.T) {
-	// dummy at command
-	input := []byte{0x08,0x01,'N','J'}
-	fakeFrame := &dummyFrame{data: input}
-	api := &APIFrame{Mode: api.EscapeModeInactive}
-
-	actual, err := api.Bytes(fakeFrame)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 8 {
-		t.Errorf("Expected length of 8, got %d", len(actual))
-	}
-}
-
-func Test_API_Frame_WithEscape(t *testing.T) {
-	var fakeParam []byte
-	for i := 0; i < 0x110D; i++ {
-		fakeParam = append(fakeParam, 0)
-	}
-
-	zb := NewZBBuilder().
-		ID(0x01).
-		Addr64(0).
-		Addr16(0).
-		BroadcastRadius(0).
-		Options(0).
-		Data(fakeParam).
-		Build()
-
-	api := &APIFrame{Mode: api.EscapeModeActive}
-	_, err := api.Bytes(zb)
-	if err != nil {
-		t.Errorf("Expected no error, but got %v", err)
-	}
-}
-
 type dummyFrame struct {
 	data []byte
 }
@@ -53,94 +14,51 @@ func (f *dummyFrame) Bytes() ([]byte, error) {
 	return f.data, nil
 }
 
-func Test_API_Frame_ZDO_WithEscape(t *testing.T) {
-	input := []byte{
-		zbExplicitAPIID,                                // frame type
-		0x01,                                           // frame ID
-		0x00, 0x13, 0xA2, 0x00, 0x41, 0x53, 0x1D, 0x4F, // dst 64-bit
-		0x00, 0x00,                                     // dst 16-bit
-		0x00, 0x00,                                     // src + dst endpoints
-		0x00, 0x31,                                     // cluster ID
-		0x00, 0x00,                                     // profile ID
-		0x00,                                           // broadcastRadius
-		0x00,                                           // options
-		0x10, 0x00,                                     // payload
-	}
-
-	fakeFrame := &dummyFrame{input}
-	expected := []byte{
-		0x7E, 0x00, 0x18, 0x7D, 0x31, 0x01, 0x00, 0x7D, 0x33, 0xA2, 0x00, 0x41,
-		0x53, 0x1D, 0x4F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x31, 0x00, 0x00, 0x00,
-		0x00, 0x01, 0x00, 0x06,
-	}
-
-	api := &APIFrame{Mode: api.EscapeModeActive}
-	result, err := api.Bytes(fakeFrame)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
-	if len(expected) != len(result) {
-		t.Logf("\nexpected=% #v\n\n  result=% #v\n", expected, result)
-		t.Fatalf("expected len=%d, got len=%d", len(expected), len(result))
-	}
+type txFrameTest struct {
+	name     string
+	input    Frame
+	escape   bool
+	expected []byte
 }
 
-func Test_ZB(t *testing.T) {
-	zb := NewZBBuilder().
-		ID(0xFF).
-		Addr64(0x0001020304050607).
-		Addr16(0x0001).
-		BroadcastRadius(0xFF).
-		Options(0xEE).
-		Data([]byte{0x00, 0x01}).
-		Build()
-
-	actual, err := zb.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 16 {
-		t.Errorf("Expected ZB frame to be 16 bytes in length, got: %d", len(actual))
-	}
-
-	expected := []byte{zbAPIID, 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
-		0x06, 0x07, 0x00, 0x01, 0xFF, 0xEE, 0x00, 0x01}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
-		}
-	}
+var txFrameTests = []txFrameTest{
+	{"API Frame No Escape", &dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}}, false, []byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
+	{"API Frame With Escape",
+		&dummyFrame{[]byte{0x23, 0x7E, 0x7D, 0x11, 0x13}},
+		true,
+		[]byte{0x7E, 0x00, 0x05, 0x23, 0x7D, 0x5E, 0x7D, 0x5D, 0x7D, 0x31, 0x7D, 0x33, 0xBD}},
 }
 
-func Test_ZB_EXPLICIT(t *testing.T) {
-	zb := NewZBExplicitBuilder().
-		ID(0xFF).
-		Addr64(0x0001020304050607).
-		Addr16(0x0001).
-		SrcEP(0x01).
-		DstEP(0x02).
-		ClusterID(0x1234).
-		ProfileID(0x5678).
-		BroadcastRadius(0xFF).
-		Options(0xEE).
-		Data([]byte{0x00, 0x01}).
-		Build()
+func TestTXAPIFrame(t *testing.T) {
+	t.Parallel()
 
-	actual, err := zb.Bytes()
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-	if len(actual) != 22 {
-		t.Errorf("Expected ZB frame to be 16 bytes in length, got: %d", len(actual))
-	}
+	t.Run("TX API Suite", func(t *testing.T) {
+		for _, tt := range txFrameTests {
+			tt := tt
 
-	expected := []byte{zbExplicitAPIID, 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
-		0x06, 0x07, 0x00, 0x01,
-		0x01, 0x02, 0x12, 0x34, 0x56, 0x78,
-		0xFF, 0xEE, 0x00, 0x01}
-	for i, b := range expected {
-		if b != actual[i] {
-			t.Errorf("Expected 0x%02x, but got 0x%02x", b, actual[i])
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				var apiFrame *APIFrame
+				if tt.escape {
+					apiFrame = &APIFrame{Mode: api.EscapeModeActive}
+				} else {
+					apiFrame = &APIFrame{Mode: api.EscapeModeInactive}
+				}
+
+				actual, err := apiFrame.Bytes(tt.input)
+				if err != nil {
+					t.Fatalf("Expected no error, but got: %v", err)
+				}
+				if len(actual) != len(tt.expected) {
+					t.Fatalf("Expected API frame to be %d bytes in length, got: %d", len(tt.expected), len(actual))
+				}
+				for i, b := range actual {
+					if b != tt.expected[i] {
+						t.Fatalf("Expected 0x%02x, but got 0x%02x at index %d", b, actual[i], i)
+					}
+				}
+			})
 		}
-	}
+	})
 }

@@ -52,7 +52,11 @@ func Parameter(parameter []byte) func(*ATRemote) {
 }
 
 func NewATRemote(options ...func(*ATRemote)) *ATRemote {
-	f := &ATRemote{}
+	f := &ATRemote{Addr64:0xFFFF, Addr16:0xFFFE, Cmd:[2]byte{'N','I'}}
+
+	if options == nil {
+		return f
+	}
 
 	for _, option := range options {
 		option(f)

@@ -2,7 +2,6 @@ package at
 
 import (
 	"bytes"
-	"github.com/pauleyj/gobee/api/tx"
 )
 
 const atAPIID byte = 0x08
@@ -33,6 +32,10 @@ func Parameter(parameter []byte) func(*AT) {
 func NewAT(options ...func(*AT)) *AT {
 	f := &AT{Cmd:[2]byte{'N','I'}}
 
+	if options == nil {
+		return f
+	}
+
 	for _, option := range options {
 		option(f)
 	}
@@ -42,7 +45,6 @@ func NewAT(options ...func(*AT)) *AT {
 
 // AT transmit frame
 type AT struct {
-	tx.Frame
 	FrameID   byte
 	Cmd       [2]byte
 	Parameter []byte
