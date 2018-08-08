@@ -13,12 +13,13 @@ var (
 
 func init() {
 	rxFrameFactory = make(map[byte]FrameFactory)
-	// AT command response
+
 	rxFrameFactory[atAPIID] = newAT
 	rxFrameFactory[zbAPIID] = newZB
 	rxFrameFactory[txStatusAPIID] = newTXStatus
 	rxFrameFactory[zbExplicitAPIID] = newZBExplicit
 	rxFrameFactory[atRemoteAPIID] = newATRemote
+	rxFrameFactory[modemStatusAPIID] = newModemStatus
 }
 
 // NewFrameForAPIID creates an appropriate RxFrame for the given API ID

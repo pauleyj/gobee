@@ -5,8 +5,10 @@ import (
 	"github.com/pauleyj/gobee"
 	"github.com/pauleyj/gobee/api"
 	"github.com/pauleyj/gobee/api/rx"
-	"github.com/pauleyj/gobee/api/tx"
+	"github.com/pauleyj/gobee/api/tx/at"
 	"testing"
+	"github.com/pauleyj/gobee/api/tx/at_queue"
+	"github.com/pauleyj/gobee/api/tx/zb"
 )
 
 func addressOf(b byte) *byte { return &b }
@@ -54,15 +56,15 @@ func TestXBee_TX_AT(t *testing.T) {
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
-	var at = tx.NewATBuilder().ID(0x01).Command([2]byte{'N', 'I'}).Parameter(addressOf(0x00)).Build()
-	_, err := xbee.TX(at)
+	var atFrame = at.NewAT(at.FrameID(0x01),at.Command([2]byte{'N', 'I'}))
+	_, err := xbee.TX(atFrame)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
 
-	at = tx.NewATBuilder().ID(0x01).Command([2]byte{'N', 'I'}).Parameter(addressOf(0x11)).Build()
+	atFrame = at.NewAT(at.FrameID(0x01), at.Command([2]byte{'N', 'I'}), at.Parameter([]byte{0x11}))
 	xbee.SetAPIMode(api.EscapeModeActive)
-	_, err = xbee.TX(at)
+	_, err = xbee.TX(atFrame)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -73,15 +75,15 @@ func TestXBee_TX_AT_QUEUE(t *testing.T) {
 	receiver := &Receiver{t: t}
 	xbee := gobee.New(transmitter, receiver)
 
-	var at = tx.NewATQueueBuilder().ID(0x01).Command([2]byte{'N', 'I'}).Parameter(addressOf(0x00)).Build()
-	_, err := xbee.TX(at)
+	var atFrame = at_queue.NewATQueue(at_queue.FrameID(0x01), at_queue.Command([2]byte{'N', 'I'}))
+	_, err := xbee.TX(atFrame)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
 
-	at = tx.NewATQueueBuilder().ID(0x01).Command([2]byte{'N', 'I'}).Parameter(addressOf(0x11)).Build()
+	atFrame = at_queue.NewATQueue(at_queue.FrameID(0x01), at_queue.Command([2]byte{'N', 'I'}), at_queue.Parameter([]byte{0x11}))
 	xbee.SetAPIMode(api.EscapeModeActive)
-	_, err = xbee.TX(at)
+	_, err = xbee.TX(atFrame)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -139,7 +141,7 @@ func TestXBee_TX_Escape_Length(t *testing.T) {
 		fakeParam = append(fakeParam, 0)
 	}
 
-	zb := tx.NewZBBuilder().ID(0x01).Addr64(0).Addr16(0).BroadcastRadius(0).Options(0).Data(fakeParam).Build()
+	zb := zb.NewZB(zb.FrameID(0x01), zb.Addr64(0), zb.Addr16(0),zb.BroadcastRadius(0), zb.Data(fakeParam))
 	_, err := xbee.TX(zb)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
@@ -151,8 +153,8 @@ func TestXBee_TX_Escape_Checksum(t *testing.T) {
 	receiver := &Receiver{t: t}
 	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
 
-	at := tx.NewATBuilder().ID(0x01).Command([2]byte{'A', 'O'}).Parameter(addressOf(0xE8)).Build()
-	_, err := xbee.TX(at)
+	atFrame := at.NewAT(at.FrameID(0x01), at.Command([2]byte{'A', 'O'}),at.Parameter([]byte{0xE8}))
+	_, err := xbee.TX(atFrame)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
