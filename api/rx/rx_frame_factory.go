@@ -20,6 +20,7 @@ func init() {
 	rxFrameFactory[zbExplicitAPIID] = newZBExplicit
 	rxFrameFactory[atRemoteAPIID] = newATRemote
 	rxFrameFactory[modemStatusAPIID] = newModemStatus
+	rxFrameFactory[ioSampleAPIID] = newIOSample
 }
 
 // NewFrameForAPIID creates an appropriate RxFrame for the given API ID
