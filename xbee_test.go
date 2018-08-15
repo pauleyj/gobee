@@ -2,33 +2,39 @@ package gobee_test
 
 import (
 	"fmt"
+
+	"testing"
+
 	"github.com/pauleyj/gobee"
 	"github.com/pauleyj/gobee/api"
 	"github.com/pauleyj/gobee/api/rx"
-	"github.com/pauleyj/gobee/api/tx/at"
-	"testing"
-	"github.com/pauleyj/gobee/api/tx/at_queue"
-	"github.com/pauleyj/gobee/api/tx/zb"
+	"github.com/pauleyj/gobee/api/tx"
 )
-
-func addressOf(b byte) *byte { return &b }
 
 type Transmitter struct {
 	t        *testing.T
 	expected []byte
+	i        int
 }
 
-func (xm *Transmitter) Transmit(p []byte) (int, error) {
-	msg := fmt.Sprintf("TX (len = %4d)", len(p))
+func (t *Transmitter) Transmit(p []byte) (int, error) {
+	msg := fmt.Sprintf("TX (len = %d)", len(p))
 	for _, b := range p {
-		msg = fmt.Sprintf("%s 0x%02x", msg, b)
+		msg = fmt.Sprintf("%s 0x%02x ", msg, b)
 	}
-	xm.t.Log(msg)
-	return len(p), nil
-}
+	t.t.Log(msg)
 
-func (xm *Transmitter) SetExpectedWriteBytes(expected []byte) {
-	xm.expected = expected
+	if len(t.expected) != len(p) {
+		t.t.Fatalf("Expected TX len to be %d, but transmitted %d", len(t.expected), len(p))
+	}
+
+	for i, b := range p {
+		if b != t.expected[i] {
+			t.t.Fatalf("Expected 0x%02x at API frame index %d, but got 0x%02x", t.expected[i], i, b)
+		}
+	}
+
+	return len(p), nil
 }
 
 type Receiver struct {
@@ -51,42 +57,62 @@ func validateAT(t *testing.T, f *rx.AT) {
 	}
 }
 
-func TestXBee_TX_AT(t *testing.T) {
-	transmitter := &Transmitter{t: t}
-	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
-
-	var atFrame = at.NewAT(at.FrameID(0x01),at.Command([2]byte{'N', 'I'}))
-	_, err := xbee.TX(atFrame)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-
-	atFrame = at.NewAT(at.FrameID(0x01), at.Command([2]byte{'N', 'I'}), at.Parameter([]byte{0x11}))
-	xbee.SetAPIMode(api.EscapeModeActive)
-	_, err = xbee.TX(atFrame)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
+type dummyFrame struct {
+	data []byte
 }
 
-func TestXBee_TX_AT_QUEUE(t *testing.T) {
-	transmitter := &Transmitter{t: t}
-	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
+func (f *dummyFrame) Bytes() ([]byte, error) {
+	return f.data, nil
+}
 
-	var atFrame = at_queue.NewATQueue(at_queue.FrameID(0x01), at_queue.Command([2]byte{'N', 'I'}))
-	_, err := xbee.TX(atFrame)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
+type xbeeTXTest struct {
+	name     string
+	xbeeFunc func(*testing.T) *gobee.XBee
+	input    tx.Frame
+}
 
-	atFrame = at_queue.NewATQueue(at_queue.FrameID(0x01), at_queue.Command([2]byte{'N', 'I'}), at_queue.Parameter([]byte{0x11}))
-	xbee.SetAPIMode(api.EscapeModeActive)
-	_, err = xbee.TX(atFrame)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
+var xbeeTXTests = []xbeeTXTest{
+	{
+		"TX",
+		func(t *testing.T) *gobee.XBee {
+			tx := &Transmitter{t: t, expected: []byte{0x7e, 0x00, 0x04, 0x08, 0x01, 0x4e, 0x49, 0x5f}}
+			rx := &Receiver{t}
+			return gobee.New(tx, rx)
+		},
+		&dummyFrame{[]byte{0x08, 0x01, 0x4e, 0x49}},
+	},
+	{
+		"TX Escape",
+		func(t *testing.T) *gobee.XBee {
+			tx := &Transmitter{t: t, expected: []byte{0x7e, 0x00, 0x04, 0x7d, 0x5e, 0x7d, 0x5d, 0x7d, 0x31, 0x7d, 0x33, 0xe0}}
+			rx := &Receiver{t}
+			return gobee.New(tx, rx, gobee.APIEscapeMode(api.EscapeModeActive))
+		},
+		&dummyFrame{[]byte{0x7e, 0x7d, 0x11, 0x13}},
+	},
+}
+
+func TestXBee_TX(t *testing.T) {
+	t.Parallel()
+
+	t.Run("XBee TX Suite", func(t *testing.T) {
+		for _, tt := range xbeeTXTests {
+			tt := tt
+
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				xbee := tt.xbeeFunc(t)
+				_, err := xbee.TX(tt.input)
+				if err != nil {
+					t.Fatalf("Expected no error, but got %v", err)
+				}
+			})
+		}
+	})
+}
+
+type xbeeRXTest struct {
 }
 
 func TestXBee_RX_AT(t *testing.T) {
@@ -115,7 +141,7 @@ func TestXBee_RX_AT(t *testing.T) {
 func TestXBee_RX_AT_Escape(t *testing.T) {
 	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
-	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
+	xbee := gobee.New(transmitter, receiver, gobee.APIEscapeMode(api.EscapeModeActive))
 
 	// a valid AT command response with escaped bytes
 	response := []byte{
@@ -131,45 +157,45 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 	}
 }
 
-func TestXBee_TX_Escape_Length(t *testing.T) {
-	transmitter := &Transmitter{t: t}
-	receiver := &Receiver{t: t}
-	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
-
-	fakeParam := make([]byte, 0)
-	for i := 0; i < 0x110D; i++ {
-		fakeParam = append(fakeParam, 0)
-	}
-
-	zb := zb.NewZB(zb.FrameID(0x01), zb.Addr64(0), zb.Addr16(0),zb.BroadcastRadius(0), zb.Data(fakeParam))
-	_, err := xbee.TX(zb)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-}
-
-func TestXBee_TX_Escape_Checksum(t *testing.T) {
-	transmitter := &Transmitter{t: t}
-	receiver := &Receiver{t: t}
-	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
-
-	atFrame := at.NewAT(at.FrameID(0x01), at.Command([2]byte{'A', 'O'}),at.Parameter([]byte{0xE8}))
-	_, err := xbee.TX(atFrame)
-	if err != nil {
-		t.Errorf("Expected no error, but got: %v", err)
-	}
-}
-
-func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
-	transmitter := &Transmitter{t: t}
-	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
-
-	err := xbee.SetAPIMode(api.EscapeMode(3))
-	if err == nil {
-		t.Error("Expected error, but got none")
-	}
-}
+//func TestXBee_TX_Escape_Length(t *testing.T) {
+//	transmitter := &Transmitter{t: t}
+//	receiver := &Receiver{t: t}
+//	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
+//
+//	fakeParam := make([]byte, 0)
+//	for i := 0; i < 0x110D; i++ {
+//		fakeParam = append(fakeParam, 0)
+//	}
+//
+//	zb := zb.NewZB(zb.FrameID(0x01), zb.Addr64(api.BroadcastAddr64), zb.Addr16(api.BroadcastAddr16), zb.BroadcastRadius(0), zb.Data(fakeParam))
+//	_, err := xbee.TX(zb)
+//	if err != nil {
+//		t.Errorf("Expected no error, but got: %v", err)
+//	}
+//}
+//
+//func TestXBee_TX_Escape_Checksum(t *testing.T) {
+//	transmitter := &Transmitter{t: t}
+//	receiver := &Receiver{t: t}
+//	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
+//
+//	atFrame := at.NewAT(at.FrameID(0x01), at.Command([2]byte{'A', 'O'}), at.Parameter([]byte{0xE8}))
+//	_, err := xbee.TX(atFrame)
+//	if err != nil {
+//		t.Errorf("Expected no error, but got: %v", err)
+//	}
+//}
+//
+//func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
+//	transmitter := &Transmitter{t: t}
+//	receiver := &Receiver{t: t}
+//	xbee := gobee.New(transmitter, receiver)
+//
+//	err := xbee.SetAPIMode(api.EscapeMode(3))
+//	if err == nil {
+//		t.Error("Expected error, but got none")
+//	}
+//}
 
 func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
 	transmitter := &Transmitter{t: t}

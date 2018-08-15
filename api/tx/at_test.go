@@ -1,11 +1,13 @@
-package at
+package tx
 
 import (
 	"testing"
-	"github.com/pauleyj/gobee/api/tx"
 )
 
-var _ tx.Frame = (*AT)(nil)
+var _ Frame = (*AT)(nil)
+var _ FrameIDSetter = (*AT)(nil)
+var _ CommandSetter = (*AT)(nil)
+var _ ParameterSetter = (*AT)(nil)
 
 type atTest struct {
 	name     string
@@ -15,10 +17,10 @@ type atTest struct {
 
 var atTests = []atTest{
 	{"AT Defaults", NewAT(), []byte{atAPIID, 0, 'N', 'I'}},
-	{"AT No Param", NewAT(FrameID(0x01), Command(tx.NI)), []byte{atAPIID, 1, 'N', 'I'}},
-	{"AT Nil Param", NewAT(FrameID(0x01), Command(tx.NI), Parameter(nil)), []byte{atAPIID, 1, 'N', 'I'}},
-	{"AT Empty Param", NewAT(FrameID(0x01), Command(tx.NI), Parameter([]byte{})), []byte{atAPIID, 1, 'N', 'I'}},
-	{"AT With Param", NewAT(FrameID(0x01), Command(tx.NI), Parameter([]byte{0x00})), []byte{atAPIID, 1, 'N', 'I', 0}},
+	{"AT No Param", NewAT(FrameID(0x01), Command(NI)), []byte{atAPIID, 1, 'N', 'I'}},
+	{"AT Nil Param", NewAT(FrameID(0x01), Command(NI), Parameter(nil)), []byte{atAPIID, 1, 'N', 'I'}},
+	{"AT Empty Param", NewAT(FrameID(0x01), Command(NI), Parameter([]byte{})), []byte{atAPIID, 1, 'N', 'I'}},
+	{"AT With Param", NewAT(FrameID(0x01), Command(NI), Parameter([]byte{0x00})), []byte{atAPIID, 1, 'N', 'I', 0}},
 }
 
 func TestAT(t *testing.T) {

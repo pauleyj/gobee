@@ -1,11 +1,15 @@
-package zb
+package tx
 
 import (
-	"github.com/pauleyj/gobee/api/tx"
 	"testing"
 )
 
-var _ tx.Frame = (*ZB)(nil)
+var _ Frame = (*ZB)(nil)
+var _ Addr64Setter = (*ZB)(nil)
+var _ Addr16Setter = (*ZB)(nil)
+var _ BroadcastRadiusSetter = (*ZB)(nil)
+var _ OptionsSetter = (*ZB)(nil)
+var _ DataSetter = (*ZB)(nil)
 
 type zbTest struct {
 	name     string
@@ -30,8 +34,8 @@ var zbTests = []zbTest{
 		NewZB(Options(0x20)),
 		[]byte{zbAPIID, 0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 0x20}},
 	{"ZB Data",
-		NewZB(Data([]byte{'h','e','l','l','o'})),
-		[]byte{zbAPIID, 0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 0x00, 'h','e','l','l','o'}},
+		NewZB(Data([]byte{'h', 'e', 'l', 'l', 'o'})),
+		[]byte{zbAPIID, 0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xfe, 0x00, 0x00, 'h', 'e', 'l', 'l', 'o'}},
 }
 
 func TestZB(t *testing.T) {

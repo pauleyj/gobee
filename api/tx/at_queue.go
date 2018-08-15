@@ -1,4 +1,4 @@
-package at_queue
+package tx
 
 import (
 	"bytes"
@@ -6,33 +6,7 @@ import (
 
 const atQueueAPIID byte = 0x09
 
-func FrameID(id byte) func(*ATQueue) {
-	return func(f *ATQueue) {
-		f.FrameID = id
-	}
-}
-
-func Command(cmd [2]byte) func(*ATQueue) {
-	return func(f *ATQueue) {
-		copy(f.Cmd[:], cmd[:])
-		for i, b := range cmd {
-			f.Cmd[i] = b
-		}
-	}
-}
-
-func Parameter(parameter []byte) func(*ATQueue) {
-	return func(f *ATQueue) {
-		if parameter == nil || len(parameter) == 0 {
-			return
-		}
-
-		f.Parameter = make([]byte, len(parameter))
-		copy(f.Parameter, parameter)
-	}
-}
-
-func NewATQueue(options ...func(*ATQueue)) *ATQueue {
+func NewATQueue(options ...func(interface{})) *ATQueue {
 	f := &ATQueue{}
 
 	if options == nil {
@@ -51,6 +25,19 @@ type ATQueue struct {
 	FrameID   byte
 	Cmd       [2]byte
 	Parameter []byte
+}
+
+func (f *ATQueue) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+func (f *ATQueue) SetCommand(cmd [2]byte) {
+	copy(f.Cmd[:], cmd[:])
+}
+
+func (f *ATQueue) SetParameter(parameter []byte) {
+	f.Parameter = make([]byte, len(parameter))
+	copy(f.Parameter, parameter)
 }
 
 // Bytes turn ATQueue frame into bytes

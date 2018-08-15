@@ -1,4 +1,4 @@
-package at_remote
+package tx
 
 import (
 	"bytes"
@@ -7,51 +7,7 @@ import (
 
 const atRemoteAPIID byte = 0x17
 
-func FrameID(id byte) func(*ATRemote) {
-	return func(f *ATRemote) {
-		f.FrameID = id
-	}
-}
-
-func Addr64(addr64 uint64) func(*ATRemote) {
-	return func(f *ATRemote) {
-		f.Addr64 = addr64
-	}
-}
-
-func Addr16(addr16 uint16) func(*ATRemote) {
-	return func(f *ATRemote) {
-		f.Addr16 = addr16
-	}
-}
-
-func Options(options byte) func(*ATRemote) {
-	return func(f *ATRemote) {
-		f.Options = options
-	}
-}
-
-func Command(cmd [2]byte) func(*ATRemote) {
-	return func(f *ATRemote) {
-		copy(f.Cmd[:], cmd[:])
-		for i, b := range cmd {
-			f.Cmd[i] = b
-		}
-	}
-}
-
-func Parameter(parameter []byte) func(*ATRemote) {
-	return func(f *ATRemote) {
-		if parameter == nil || len(parameter) == 0 {
-			return
-		}
-
-		f.Parameter = make([]byte, len(parameter))
-		copy(f.Parameter, parameter)
-	}
-}
-
-func NewATRemote(options ...func(*ATRemote)) *ATRemote {
+func NewATRemote(options ...func(interface{})) *ATRemote {
 	f := &ATRemote{Addr64:0xFFFF, Addr16:0xFFFE, Cmd:[2]byte{'N','I'}}
 
 	if options == nil {
@@ -73,6 +29,31 @@ type ATRemote struct {
 	Options byte
 	Cmd [2]byte
 	Parameter []byte
+}
+
+func (f *ATRemote) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+func (f *ATRemote) SetAddr64(addr uint64) {
+	f.Addr64 = addr
+}
+
+func (f *ATRemote) SetAddr16(addr uint16) {
+	f.Addr16 = addr
+}
+
+func (f *ATRemote) SetOptions(options byte) {
+	f.Options = options
+}
+
+func (f *ATRemote) SetCommand(cmd [2]byte) {
+	copy(f.Cmd[:], cmd[:])
+}
+
+func (f *ATRemote) SetParameter(parameter []byte) {
+	f.Parameter = make([]byte, len(parameter))
+	copy(f.Parameter, parameter)
 }
 
 // Bytes turn ATRemote frame into bytes

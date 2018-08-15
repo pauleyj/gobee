@@ -1,4 +1,4 @@
-package zb_explicit
+package tx
 
 import (
 	"bytes"
@@ -6,68 +6,6 @@ import (
 )
 
 const zbExplicitAPIID byte = 0x11
-
-func FrameID(id byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.FrameID = id
-	}
-}
-
-func Addr64(addr64 uint64) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.Addr64 = addr64
-	}
-}
-
-func Addr16(addr16 uint16) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.Addr16 = addr16
-	}
-}
-
-func SrcEP(src byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.SrcEP = src
-	}
-}
-func DstEP(dst byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.DstEP = dst
-	}
-}
-func ClusterID(id byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.ClusterID = id
-	}
-}
-func ProfileID(id byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.ProfileID = id
-	}
-}
-
-func BroadcastRadius(hops byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.BroadcastRadius = hops
-	}
-}
-
-func Options(options byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		f.Options = options
-	}
-}
-
-func Data(data []byte) func(*ZBExplicit) {
-	return func(f *ZBExplicit) {
-		if data == nil || len(data) == 0 {
-			return
-		}
-
-		f.Data = make([]byte, len(data))
-		copy(f.Data, data)
-	}
-}
 
 // ZBExplicit transmit frame
 type ZBExplicit struct {
@@ -83,7 +21,7 @@ type ZBExplicit struct {
 	Data            []byte
 }
 
-func NewZBExplicit(options ...func(*ZBExplicit)) *ZBExplicit {
+func NewZBExplicit(options ...func(interface{})) *ZBExplicit {
 	f := &ZBExplicit{Addr64:0xFFFF, Addr16:0xFFFE}
 
 	if options == nil {
@@ -97,7 +35,48 @@ func NewZBExplicit(options ...func(*ZBExplicit)) *ZBExplicit {
 	return f
 }
 
-// Bytes turn ATRemote frame into bytes
+func (f *ZBExplicit) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+func (f *ZBExplicit) SetAddr64(addr uint64) {
+	f.Addr64 = addr
+}
+
+func (f *ZBExplicit) SetAddr16(addr uint16) {
+	f.Addr16 = addr
+}
+
+func (f *ZBExplicit) SetSrcEP(src byte) {
+	f.SrcEP = src
+}
+
+func (f *ZBExplicit) SetDstEP(dst byte) {
+	f.DstEP = dst
+}
+
+func (f *ZBExplicit) SetClusterID(id byte) {
+	f.ClusterID = id
+}
+
+func (f *ZBExplicit) SetProfileID(id byte) {
+	f.ProfileID = id
+}
+
+func (f *ZBExplicit) SetBroadcastRadius(hops byte) {
+	f.BroadcastRadius = hops
+}
+
+func (f *ZBExplicit) SetOptions(options byte) {
+	f.Options = options
+}
+
+func (f *ZBExplicit) SetData(data []byte) {
+	f.Data = make([]byte, len(data))
+	copy(f.Data, data)
+}
+
+// Bytes turn frame into bytes
 func (f *ZBExplicit) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 

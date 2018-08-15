@@ -1,4 +1,4 @@
-package at
+package tx
 
 import (
 	"bytes"
@@ -6,31 +6,8 @@ import (
 
 const atAPIID byte = 0x08
 
-func FrameID(id byte) func(*AT) {
-	return func(f *AT) {
-		f.FrameID = id
-	}
-}
-
-func Command(cmd [2]byte) func(*AT) {
-	return func(f *AT) {
-		copy(f.Cmd[:], cmd[:])
-	}
-}
-
-func Parameter(parameter []byte) func(*AT) {
-	return func(f *AT) {
-		if parameter == nil || len(parameter) == 0 {
-			return
-		}
-
-		f.Parameter = make([]byte, len(parameter))
-		copy(f.Parameter, parameter)
-	}
-}
-
-func NewAT(options ...func(*AT)) *AT {
-	f := &AT{Cmd:[2]byte{'N','I'}}
+func NewAT(options ...func(interface{})) *AT {
+	f := &AT{Cmd: [2]byte{'N', 'I'}}
 
 	if options == nil {
 		return f
@@ -48,6 +25,19 @@ type AT struct {
 	FrameID   byte
 	Cmd       [2]byte
 	Parameter []byte
+}
+
+func (f *AT) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+func (f *AT) SetCommand(cmd [2]byte) {
+	copy(f.Cmd[:], cmd[:])
+}
+
+func (f *AT) SetParameter(parameter []byte) {
+	f.Parameter = make([]byte, len(parameter))
+	copy(f.Parameter, parameter)
 }
 
 // Bytes turn AT frame into bytes

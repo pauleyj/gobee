@@ -2,6 +2,12 @@ package api
 
 import "errors"
 
+// BroadcastAddr64 64-bit broadcast address
+const BroadcastAddr64 uint64 = 0x000000000000FFFF
+
+// BroadcastAddr16 16-bit broadcast address
+const BroadcastAddr16 uint16 = 0xFFFE
+
 // FrameDelimiter start API frame delimiter, requires escaping in mode 2
 const FrameDelimiter byte = 0x7E
 
@@ -31,11 +37,11 @@ var (
 		xoff:           {},
 	}
 	// ErrChecksumValidation frame failed checksum validation
-	ErrChecksumValidation = errors.New("Frame failed checksum validation")
+	ErrChecksumValidation = errors.New("checksum validation error")
 	// ErrFrameDelimiter expecting frame start delimiter
-	ErrFrameDelimiter = errors.New("Expected frame delimiter")
+	ErrFrameDelimiter = errors.New("expected frame delimiter")
 	// ErrInvalidAPIEscapeMode invalid API escape mode
-	ErrInvalidAPIEscapeMode = errors.New("Invalid API escape mode")
+	ErrInvalidAPIEscapeMode = errors.New("invalid API escape mode")
 )
 
 // State the API frame state type
@@ -55,8 +61,8 @@ type EscapeMode byte
 
 // Escape modes
 const (
-	EscapeModeInactive = EscapeMode(1)
-	EscapeModeActive   = EscapeMode(2)
+	EscapeModeInactive = EscapeMode(0)
+	EscapeModeActive   = EscapeMode(1)
 )
 
 // ShouldEscape should this byte be escaped

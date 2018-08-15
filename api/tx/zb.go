@@ -1,4 +1,4 @@
-package zb
+package tx
 
 import (
 	"bytes"
@@ -6,47 +6,6 @@ import (
 )
 
 const zbAPIID byte = 0x10
-
-func FrameID(id byte) func(*ZB) {
-	return func(f *ZB) {
-		f.FrameID = id
-	}
-}
-
-func Addr64(addr64 uint64) func(*ZB) {
-	return func(f *ZB) {
-		f.Addr64 = addr64
-	}
-}
-
-func Addr16(addr16 uint16) func(*ZB) {
-	return func(f *ZB) {
-		f.Addr16 = addr16
-	}
-}
-
-func BroadcastRadius(hops byte) func(*ZB) {
-	return func(f *ZB) {
-		f.BroadcastRadius = hops
-	}
-}
-
-func Options(options byte) func(*ZB) {
-	return func(f *ZB) {
-		f.Options = options
-	}
-}
-
-func Data(data []byte) func(*ZB) {
-	return func(f *ZB) {
-		if data == nil || len(data) == 0 {
-			return
-		}
-
-		f.Data = make([]byte, len(data))
-		copy(f.Data, data)
-	}
-}
 
 // ZB transmit frame
 type ZB struct {
@@ -58,8 +17,8 @@ type ZB struct {
 	Data            []byte
 }
 
-func NewZB(options ...func(*ZB)) *ZB {
-	f := &ZB{Addr64:0xFFFF, Addr16:0xFFFE}
+func NewZB(options ...func(interface{})) *ZB {
+	f := &ZB{Addr64: 0xFFFF, Addr16: 0xFFFE}
 
 	if options == nil {
 		return f
@@ -70,6 +29,31 @@ func NewZB(options ...func(*ZB)) *ZB {
 	}
 
 	return f
+}
+
+func (f *ZB) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+func (f *ZB) SetAddr64(addr uint64) {
+	f.Addr64 = addr
+}
+
+func (f *ZB) SetAddr16(addr uint16) {
+	f.Addr16 = addr
+}
+
+func (f *ZB) SetBroadcastRadius(hops byte) {
+	f.BroadcastRadius = hops
+}
+
+func (f *ZB) SetOptions(options byte) {
+	f.Options = options
+}
+
+func (f *ZB) SetData(data []byte) {
+	f.Data = make([]byte, len(data))
+	copy(f.Data, data)
 }
 
 // Bytes turn ZB frame into bytes
