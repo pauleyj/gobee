@@ -44,26 +44,13 @@ func (f *AT) SetParameter(parameter []byte) {
 func (f *AT) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 
-	err := b.WriteByte(atAPIID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.FrameID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(f.Cmd[:])
-	if err != nil {
-		return nil, err
-	}
+	b.WriteByte(atAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(f.Cmd[:])
 
 	if f.Parameter != nil && len(f.Parameter) > 0 {
-		_, err = b.Write(f.Parameter)
-		if err != nil {
-			return nil, err
-		}
+		b.Write(f.Parameter)
 	}
+
 	return b.Bytes(), nil
 }

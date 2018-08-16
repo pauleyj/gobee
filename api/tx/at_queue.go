@@ -9,13 +9,7 @@ const atQueueAPIID byte = 0x09
 func NewATQueue(options ...func(interface{})) *ATQueue {
 	f := &ATQueue{}
 
-	if options == nil {
-		return f
-	}
-
-	for _, option := range options {
-		option(f)
-	}
+	optionsRunner(f, options...)
 
 	return f
 }
@@ -44,26 +38,13 @@ func (f *ATQueue) SetParameter(parameter []byte) {
 func (f *ATQueue) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 
-	err := b.WriteByte(atQueueAPIID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.FrameID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(f.Cmd[:])
-	if err != nil {
-		return nil, err
-	}
+	b.WriteByte(atQueueAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(f.Cmd[:])
 
 	if f.Parameter != nil {
-		_, err = b.Write(f.Parameter)
-		if err != nil {
-			return nil, err
-		}
+		b.Write(f.Parameter)
 	}
+
 	return b.Bytes(), nil
 }

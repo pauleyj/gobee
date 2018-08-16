@@ -10,13 +10,7 @@ const atRemoteAPIID byte = 0x17
 func NewATRemote(options ...func(interface{})) *ATRemote {
 	f := &ATRemote{Addr64:0xFFFF, Addr16:0xFFFE, Cmd:[2]byte{'N','I'}}
 
-	if options == nil {
-		return f
-	}
-
-	for _, option := range options {
-		option(f)
-	}
+	optionsRunner(f, options...)
 
 	return f
 }
@@ -60,41 +54,16 @@ func (f *ATRemote) SetParameter(parameter []byte) {
 func (f *ATRemote) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 
-	err := b.WriteByte(atRemoteAPIID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.FrameID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(util.Uint64ToBytes(f.Addr64))
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(util.Uint16ToBytes(f.Addr16))
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.Options)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(f.Cmd[:])
-	if err != nil {
-		return nil, err
-	}
+	b.WriteByte(atRemoteAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(util.Uint64ToBytes(f.Addr64))
+	b.Write(util.Uint16ToBytes(f.Addr16))
+	b.WriteByte(f.Options)
+	b.Write(f.Cmd[:])
 
 	if f.Parameter != nil && len(f.Parameter) > 0 {
-		_, err = b.Write(f.Parameter)
-		if err != nil {
-			return nil, err
-		}
+		b.Write(f.Parameter)
 	}
+
 	return b.Bytes(), nil
 }

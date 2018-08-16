@@ -17,15 +17,26 @@ func (f *dummyFrame) Bytes() ([]byte, error) {
 type txFrameTest struct {
 	name     string
 	input    Frame
-	escape   bool
+	f        *APIFrame
 	expected []byte
 }
 
 var txFrameTests = []txFrameTest{
-	{"API Frame No Escape", &dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}}, false, []byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
+	{"API Frame Default",
+		&dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}},
+		NewAPIFrame(),
+		[]byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
+	{"API Frame nil Options",
+		&dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}},
+		NewAPIFrame(nil),
+		[]byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
+	{"API Frame No Escape",
+		&dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}},
+		NewAPIFrame(api.APIEscapeMode(api.EscapeModeInactive)),
+		[]byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
 	{"API Frame With Escape",
 		&dummyFrame{[]byte{0x23, 0x7E, 0x7D, 0x11, 0x13}},
-		true,
+		NewAPIFrame(api.APIEscapeMode(api.EscapeModeActive)),
 		[]byte{0x7E, 0x00, 0x05, 0x23, 0x7D, 0x5E, 0x7D, 0x5D, 0x7D, 0x31, 0x7D, 0x33, 0xBD}},
 }
 
@@ -39,14 +50,7 @@ func TestTXAPIFrame(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
-				var apiFrame *APIFrame
-				if tt.escape {
-					apiFrame = &APIFrame{Mode: api.EscapeModeActive}
-				} else {
-					apiFrame = &APIFrame{Mode: api.EscapeModeInactive}
-				}
-
-				actual, err := apiFrame.Bytes(tt.input)
+				actual, err := tt.f.Bytes(tt.input)
 				if err != nil {
 					t.Fatalf("Expected no error, but got: %v", err)
 				}

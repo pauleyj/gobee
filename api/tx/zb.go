@@ -20,13 +20,7 @@ type ZB struct {
 func NewZB(options ...func(interface{})) *ZB {
 	f := &ZB{Addr64: 0xFFFF, Addr16: 0xFFFE}
 
-	if options == nil {
-		return f
-	}
-
-	for _, option := range options {
-		option(f)
-	}
+	optionsRunner(f, options...)
 
 	return f
 }
@@ -60,41 +54,16 @@ func (f *ZB) SetData(data []byte) {
 func (f *ZB) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 
-	err := b.WriteByte(zbAPIID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.FrameID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(util.Uint64ToBytes(f.Addr64))
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = b.Write(util.Uint16ToBytes(f.Addr16))
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.BroadcastRadius)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.WriteByte(f.Options)
-	if err != nil {
-		return nil, err
-	}
+	b.WriteByte(zbAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(util.Uint64ToBytes(f.Addr64))
+	b.Write(util.Uint16ToBytes(f.Addr16))
+	b.WriteByte(f.BroadcastRadius)
+	b.WriteByte(f.Options)
 
 	if f.Data != nil && len(f.Data) > 0 {
-		_, err = b.Write(f.Data)
-		if err != nil {
-			return nil, err
-		}
+		b.Write(f.Data)
 	}
+
 	return b.Bytes(), nil
 }

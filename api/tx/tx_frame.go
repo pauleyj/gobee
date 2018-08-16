@@ -156,3 +156,17 @@ func ProfileID(id byte) func(interface{}) {
 		}
 	}
 }
+
+func optionsRunner(i interface{}, options ...func(interface{})) {
+	if options == nil || len(options) == 0 {
+		return
+	}
+
+	for _, option := range options {
+		if option == nil {
+			continue
+		}
+
+		option(i)
+	}
+}

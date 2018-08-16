@@ -28,7 +28,7 @@ func TestATQueue(t *testing.T) {
 
 	t.Run("AT Queue Test Suite", func(t *testing.T) {
 		t.Parallel()
-		for _, tt := range atTests {
+		for _, tt := range atQueueTests {
 			tt := tt
 
 			t.Run(tt.name, func(t *testing.T) {

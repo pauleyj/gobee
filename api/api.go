@@ -61,9 +61,21 @@ type EscapeMode byte
 
 // Escape modes
 const (
-	EscapeModeInactive = EscapeMode(0)
-	EscapeModeActive   = EscapeMode(1)
+	EscapeModeInactive = EscapeMode(1)
+	EscapeModeActive   = EscapeMode(2)
 )
+
+type APIEscapeModeSetter interface {
+	SetAPIEscapeMode(EscapeMode)
+}
+
+func APIEscapeMode(mode EscapeMode) func(interface{}) {
+	return func(i interface{}) {
+		if t, ok := i.(APIEscapeModeSetter); ok {
+			t.SetAPIEscapeMode(mode)
+		}
+	}
+}
 
 // ShouldEscape should this byte be escaped
 func ShouldEscape(c byte) bool {

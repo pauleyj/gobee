@@ -16,26 +16,20 @@ type XBeeReceiver interface {
 	Receive(rx.Frame) error
 }
 
-// XBee all the things
-type XBee struct {
-	transmitter XBeeTransmitter
-	receiver    XBeeReceiver
-	apiMode     api.EscapeMode
-	frame       *rx.APIFrame
-}
-
-func APIEscapeMode(mode api.EscapeMode) func(*XBee) {
-	return func(xbee *XBee) {
-		xbee.apiMode = mode
+func APIEscapeMode(mode api.EscapeMode) func(interface{}) {
+	return func(i interface{}) {
+		if t, ok := i.(api.APIEscapeModeSetter); ok {
+			t.SetAPIEscapeMode(mode)
+		}
 	}
 }
 
 // New constructor of XBee's
-func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(xbee *XBee)) *XBee {
+func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(interface{})) *XBee {
 	xbee :=  &XBee{
 		transmitter: transmitter,
 		receiver:    receiver,
-		frame:       &rx.APIFrame{},
+		frame:       rx.NewAPIFrame(options...),
 	}
 
 	if options == nil || len(options) == 0 {
@@ -47,6 +41,18 @@ func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(xbe
 	}
 
 	return xbee
+}
+
+// XBee all the things
+type XBee struct {
+	transmitter XBeeTransmitter
+	receiver    XBeeReceiver
+	apiMode     api.EscapeMode
+	frame       *rx.APIFrame
+}
+
+func (x *XBee) SetAPIEscapeMode(mode api.EscapeMode) {
+	x.apiMode = mode
 }
 
 // RX bytes received from the serial communications port are sent here
@@ -66,7 +72,7 @@ func (x *XBee) RX(b byte) error {
 // TX transmit a frame to the XBee, forms an appropriate API frame for the frame being sent,
 // uses the XBeeTransmitter to send the API frame bytes to the serial communications port
 func (x *XBee) TX(frame tx.Frame) (int, error) {
-	f := &tx.APIFrame{Mode: x.apiMode}
+	f := tx.NewAPIFrame(api.APIEscapeMode(x.apiMode))
 	p, err := f.Bytes(frame)
 	if err != nil {
 		return 0, err

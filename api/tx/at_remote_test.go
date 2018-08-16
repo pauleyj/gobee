@@ -35,7 +35,7 @@ func TestATRemote(t *testing.T) {
 	t.Parallel()
 
 	t.Run("AT Remote Test Suite", func(t *testing.T) {
-		for _, tt := range atTests {
+		for _, tt := range atRemoteTests {
 			tt := tt
 
 			t.Run(tt.name, func(t *testing.T) {

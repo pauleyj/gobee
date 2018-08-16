@@ -7,9 +7,21 @@ import (
 	"github.com/pauleyj/gobee/api/tx/util"
 )
 
+func NewAPIFrame(options ...func(interface{})) *APIFrame {
+	f := &APIFrame{}
+
+	optionsRunner(f, options...)
+
+	return f
+}
+
 // APIFrame defines an API frame structure
 type APIFrame struct {
 	Mode api.EscapeMode
+}
+
+func (f *APIFrame) SetAPIEscapeMode(mode api.EscapeMode) {
+	f.Mode = mode
 }
 
 // Bytes transforms a data frame into an API frame slice

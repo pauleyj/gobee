@@ -4,6 +4,20 @@ import (
 	"github.com/pauleyj/gobee/api"
 )
 
+func NewAPIFrame(options ...func(interface{})) *APIFrame {
+	f := &APIFrame{}
+
+	if options == nil {
+		return f
+	}
+
+	for _, option := range options {
+		option(f)
+	}
+
+	return f
+}
+
 // APIFrame defines an RX API frame
 type APIFrame struct {
 	Mode  api.EscapeMode
@@ -11,12 +25,8 @@ type APIFrame struct {
 	frame Frame
 }
 
-type state struct {
-	state    api.State
-	escape   bool
-	index    uint16
-	dataSize uint16
-	chechsum uint8
+func (f *APIFrame) SetAPIEscapeMode(mode api.EscapeMode) {
+	f.Mode = mode
 }
 
 // RX receive byte
@@ -140,4 +150,12 @@ func (f *APIFrame) shouldEscapeNext(c byte) bool {
 func (f *APIFrame) escape(c byte) byte {
 	f.state.escape = false
 	return api.Escape(c)
+}
+
+type state struct {
+	state    api.State
+	escape   bool
+	index    uint16
+	dataSize uint16
+	chechsum uint8
 }
