@@ -16,6 +16,7 @@ type XBeeReceiver interface {
 	Receive(rx.Frame) error
 }
 
+// APIEscapeMode helper option function to gobee.New
 func APIEscapeMode(mode api.EscapeMode) func(interface{}) {
 	return func(i interface{}) {
 		if t, ok := i.(api.APIEscapeModeSetter); ok {
@@ -29,7 +30,7 @@ func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(int
 	xbee :=  &XBee{
 		transmitter: transmitter,
 		receiver:    receiver,
-		frame:       rx.NewAPIFrame(options...),
+		frame:       rx.New(options...),
 	}
 
 	if options == nil || len(options) == 0 {
@@ -37,6 +38,10 @@ func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(int
 	}
 
 	for _, option := range options {
+		if option == nil {
+			continue
+		}
+
 		option(xbee)
 	}
 
@@ -51,6 +56,7 @@ type XBee struct {
 	frame       *rx.APIFrame
 }
 
+// SetAPIEscapeMode satisfy APIEscapeModeSetter interface
 func (x *XBee) SetAPIEscapeMode(mode api.EscapeMode) {
 	x.apiMode = mode
 }
@@ -72,7 +78,7 @@ func (x *XBee) RX(b byte) error {
 // TX transmit a frame to the XBee, forms an appropriate API frame for the frame being sent,
 // uses the XBeeTransmitter to send the API frame bytes to the serial communications port
 func (x *XBee) TX(frame tx.Frame) (int, error) {
-	f := tx.NewAPIFrame(api.APIEscapeMode(x.apiMode))
+	f := tx.New(api.APIEscapeMode(x.apiMode))
 	p, err := f.Bytes(frame)
 	if err != nil {
 		return 0, err

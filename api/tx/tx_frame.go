@@ -5,10 +5,12 @@ type Frame interface {
 	Bytes() ([]byte, error)
 }
 
+// FrameIDSetter sets the frame ID
 type FrameIDSetter interface {
 	SetFrameID(byte)
 }
 
+// FrameID helper options function to set frame ID
 func FrameID(id byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(FrameIDSetter); ok {
@@ -17,10 +19,12 @@ func FrameID(id byte) func(interface{}) {
 	}
 }
 
+// CommandSetter sets AT related frame command
 type CommandSetter interface {
 	SetCommand([2]byte)
 }
 
+// Command helper options function to set AT related frame command
 func Command(cmd [2]byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(CommandSetter); ok {
@@ -29,10 +33,12 @@ func Command(cmd [2]byte) func(interface{}) {
 	}
 }
 
+// ParameterSetter sets frame parameters
 type ParameterSetter interface {
 	SetParameter([]byte)
 }
 
+// Parameter helper options function to set frame parameter
 func Parameter(parameter []byte) func(interface{}) {
 	return func(i interface{}) {
 		if parameter == nil || len(parameter) == 0 {
@@ -45,10 +51,12 @@ func Parameter(parameter []byte) func(interface{}) {
 	}
 }
 
+// Addr64Setter sets frame 64-bit address
 type Addr64Setter interface {
 	SetAddr64(uint64)
 }
 
+// Addr64 helper options function to set frames 64-bit address
 func Addr64(addr uint64) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(Addr64Setter); ok {
@@ -57,10 +65,12 @@ func Addr64(addr uint64) func(interface{}) {
 	}
 }
 
+// Addr64Setter sets frame 16-bit address
 type Addr16Setter interface {
 	SetAddr16(uint16)
 }
 
+// Addr16 helper options function to set frames 16-bit address
 func Addr16(addr uint16) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(Addr16Setter); ok {
@@ -69,10 +79,12 @@ func Addr16(addr uint16) func(interface{}) {
 	}
 }
 
+// OptionsSetter sets frame options
 type OptionsSetter interface {
 	SetOptions(byte)
 }
 
+// Options helper options function to set frame options
 func Options(options byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(OptionsSetter); ok {
@@ -81,10 +93,12 @@ func Options(options byte) func(interface{}) {
 	}
 }
 
+// BroadcastRadiusSetter sets frame broadcast radius
 type BroadcastRadiusSetter interface {
 	SetBroadcastRadius(byte)
 }
 
+// BroadcastRadius helper options function to set frame broadcast radius
 func BroadcastRadius(hops byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(BroadcastRadiusSetter); ok {
@@ -93,10 +107,12 @@ func BroadcastRadius(hops byte) func(interface{}) {
 	}
 }
 
+// DataSetter sets frame data
 type DataSetter interface {
 	SetData([]byte)
 }
 
+// Data helper options function to set frame data
 func Data(data []byte) func(interface{}) {
 	return func(i interface{}) {
 		if data == nil || len(data) == 0 {
@@ -109,10 +125,12 @@ func Data(data []byte) func(interface{}) {
 	}
 }
 
+// SrcEPSetter sets frame source endpoint
 type SrcEPSetter interface {
 	SetSrcEP(byte)
 }
 
+// SrcEP helper options function to set frame source endpoint
 func SrcEP(src byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(SrcEPSetter); ok {
@@ -121,10 +139,12 @@ func SrcEP(src byte) func(interface{}) {
 	}
 }
 
+// DstEPSetter sets frame destination endpoint
 type DstEPSetter interface {
 	SetDstEP(byte)
 }
 
+// DstEP helper options function to set frame destination endpoint
 func DstEP(dst byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(DstEPSetter); ok {
@@ -133,10 +153,12 @@ func DstEP(dst byte) func(interface{}) {
 	}
 }
 
+// ClusterIDSetter sets frame cluster ID
 type ClusterIDSetter interface {
 	SetClusterID(byte)
 }
 
+// ClusterID helper options function to set frame cluster ID
 func ClusterID(id byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(ClusterIDSetter); ok {
@@ -145,10 +167,12 @@ func ClusterID(id byte) func(interface{}) {
 	}
 }
 
+// ProfileIDSetter sets frame profile ID
 type ProfileIDSetter interface {
 	SetProfileID(byte)
 }
 
+// ProfileID helper options function to set frame profile ID
 func ProfileID(id byte) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(ProfileIDSetter); ok {

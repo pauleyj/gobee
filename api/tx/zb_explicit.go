@@ -29,48 +29,58 @@ func NewZBExplicit(options ...func(interface{})) *ZBExplicit {
 	return f
 }
 
+// SetFrameID satisfy FrameIDSetter interface
 func (f *ZBExplicit) SetFrameID(id byte) {
 	f.FrameID = id
 }
 
+// SetAddr64 satisfy Addr64Setter interface
 func (f *ZBExplicit) SetAddr64(addr uint64) {
 	f.Addr64 = addr
 }
 
+// SetAddr16 satisfy Addr16Setter interface
 func (f *ZBExplicit) SetAddr16(addr uint16) {
 	f.Addr16 = addr
 }
 
+// SetSrcEP satisfy SrcEPSetter interface
 func (f *ZBExplicit) SetSrcEP(src byte) {
 	f.SrcEP = src
 }
 
+// SetDstEP satisfy DstEPSetter interface
 func (f *ZBExplicit) SetDstEP(dst byte) {
 	f.DstEP = dst
 }
 
+// SetClusterID satisfy ClusterIDSetter interface
 func (f *ZBExplicit) SetClusterID(id byte) {
 	f.ClusterID = id
 }
 
+// SetProfileID satisfy ProfileIDSetter interface
 func (f *ZBExplicit) SetProfileID(id byte) {
 	f.ProfileID = id
 }
 
+// SetBroadcastRadius satisfy BroadcastRadiusSetter interface
 func (f *ZBExplicit) SetBroadcastRadius(hops byte) {
 	f.BroadcastRadius = hops
 }
 
+// SetOptions satisfy OptionsSetter interface
 func (f *ZBExplicit) SetOptions(options byte) {
 	f.Options = options
 }
 
+// SetData satisfy DataSetter interface
 func (f *ZBExplicit) SetData(data []byte) {
 	f.Data = make([]byte, len(data))
 	copy(f.Data, data)
 }
 
-// Bytes turn frame into bytes
+// Bytes turn frame into bytes, satosfy Frame interface
 func (f *ZBExplicit) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 

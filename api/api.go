@@ -47,7 +47,7 @@ var (
 // State the API frame state type
 type State int
 
-// Frame states
+// Frame internal states
 const (
 	FrameStart    = State(iota)
 	FrameLength   = State(iota)
@@ -59,16 +59,18 @@ const (
 // EscapeMode defines the XBee API escape mode type
 type EscapeMode byte
 
-// Escape modes
+// Escape valid escape modes
 const (
 	EscapeModeInactive = EscapeMode(1)
 	EscapeModeActive   = EscapeMode(2)
 )
 
+// APIEscapeModeSetter interface for APIEscapeMode setters
 type APIEscapeModeSetter interface {
 	SetAPIEscapeMode(EscapeMode)
 }
 
+// APIEscapeMode options helper function for APIEscapeModeSetter
 func APIEscapeMode(mode EscapeMode) func(interface{}) {
 	return func(i interface{}) {
 		if t, ok := i.(APIEscapeModeSetter); ok {

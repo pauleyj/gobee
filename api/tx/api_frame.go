@@ -7,7 +7,8 @@ import (
 	"github.com/pauleyj/gobee/api/tx/util"
 )
 
-func NewAPIFrame(options ...func(interface{})) *APIFrame {
+// New constructs a TX API frame
+func New(options ...func(interface{})) *APIFrame {
 	f := &APIFrame{}
 
 	optionsRunner(f, options...)
@@ -20,6 +21,7 @@ type APIFrame struct {
 	Mode api.EscapeMode
 }
 
+// SetAPIEscapeMode satisfy APIEscapeModeSetter interface
 func (f *APIFrame) SetAPIEscapeMode(mode api.EscapeMode) {
 	f.Mode = mode
 }

@@ -24,19 +24,19 @@ type txFrameTest struct {
 var txFrameTests = []txFrameTest{
 	{"API Frame Default",
 		&dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}},
-		NewAPIFrame(),
+		New(),
 		[]byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
 	{"API Frame nil Options",
 		&dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}},
-		NewAPIFrame(nil),
+		New(nil),
 		[]byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
 	{"API Frame No Escape",
 		&dummyFrame{data: []byte{0x08, 0x01, 'N', 'J'}},
-		NewAPIFrame(api.APIEscapeMode(api.EscapeModeInactive)),
+		New(api.APIEscapeMode(api.EscapeModeInactive)),
 		[]byte{0x7E, 0x00, 0x04, 0x08, 0x01, 'N', 'J', 0x5e}},
 	{"API Frame With Escape",
 		&dummyFrame{[]byte{0x23, 0x7E, 0x7D, 0x11, 0x13}},
-		NewAPIFrame(api.APIEscapeMode(api.EscapeModeActive)),
+		New(api.APIEscapeMode(api.EscapeModeActive)),
 		[]byte{0x7E, 0x00, 0x05, 0x23, 0x7D, 0x5E, 0x7D, 0x5D, 0x7D, 0x31, 0x7D, 0x33, 0xBD}},
 }
 

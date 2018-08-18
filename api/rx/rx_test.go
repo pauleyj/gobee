@@ -18,7 +18,7 @@ func Test_API_Frame(t *testing.T) {
 		0x74, 0x6f, 0x72, 0xe5}
 
 	api := &APIFrame{
-		Mode: api.EscapeModeInactive,
+		mode: api.EscapeModeInactive,
 	}
 
 	for _, c := range response {
@@ -43,7 +43,7 @@ func Test_API_Frame_With_Escape(t *testing.T) {
 		0x7D, 0x31, 0xce}
 
 	api := &APIFrame{
-		Mode: api.EscapeModeActive,
+		mode: api.EscapeModeActive,
 	}
 
 	for _, c := range response {
@@ -67,7 +67,7 @@ func Test_API_Frame_Invalid_Checksum(t *testing.T) {
 		0xd0,
 	}
 	api := &APIFrame{
-		Mode: api.EscapeModeActive,
+		mode: api.EscapeModeActive,
 	}
 
 	for i, c := range badChecksum {

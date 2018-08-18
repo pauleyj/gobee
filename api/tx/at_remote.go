@@ -25,32 +25,38 @@ type ATRemote struct {
 	Parameter []byte
 }
 
+// SetFrameID satisfy FrameIDSetter interface
 func (f *ATRemote) SetFrameID(id byte) {
 	f.FrameID = id
 }
 
+// SetAddr64 satisfy Addr64Setter interface
 func (f *ATRemote) SetAddr64(addr uint64) {
 	f.Addr64 = addr
 }
 
+// SetAddr16 satisfy Addr16Setter interface
 func (f *ATRemote) SetAddr16(addr uint16) {
 	f.Addr16 = addr
 }
 
+// SetOptions satisfy OptionsSetter interface
 func (f *ATRemote) SetOptions(options byte) {
 	f.Options = options
 }
 
+// SetCommand satisfy CommandSetter interface
 func (f *ATRemote) SetCommand(cmd [2]byte) {
 	copy(f.Cmd[:], cmd[:])
 }
 
+// SetParameter satisfy ParameterSetter interface
 func (f *ATRemote) SetParameter(parameter []byte) {
 	f.Parameter = make([]byte, len(parameter))
 	copy(f.Parameter, parameter)
 }
 
-// Bytes turn ATRemote frame into bytes
+// Bytes turn ATRemote frame into bytes, satisfy Frame interface
 func (f *ATRemote) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 

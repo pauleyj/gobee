@@ -25,32 +25,38 @@ func NewZB(options ...func(interface{})) *ZB {
 	return f
 }
 
+// SetFrameID satisfy FrameIDSetter interface
 func (f *ZB) SetFrameID(id byte) {
 	f.FrameID = id
 }
 
+// SetAddr64 satisfy Addr64Setter interface
 func (f *ZB) SetAddr64(addr uint64) {
 	f.Addr64 = addr
 }
 
+// SetAddr16 satisfy Addr16Setter interface
 func (f *ZB) SetAddr16(addr uint16) {
 	f.Addr16 = addr
 }
 
+// SetBroadcastRadius satisfy BroadcastRadiusSetter interface
 func (f *ZB) SetBroadcastRadius(hops byte) {
 	f.BroadcastRadius = hops
 }
 
+// SetOptions satisfy OptionsSetter interface
 func (f *ZB) SetOptions(options byte) {
 	f.Options = options
 }
 
+// SetData satisfy DataSetter interface
 func (f *ZB) SetData(data []byte) {
 	f.Data = make([]byte, len(data))
 	copy(f.Data, data)
 }
 
-// Bytes turn ZB frame into bytes
+// Bytes turn ZB frame into bytes, satisfy Frame interface
 func (f *ZB) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 

@@ -27,20 +27,23 @@ type AT struct {
 	Parameter []byte
 }
 
+// SetFrameID satisfy FrameIDSetter interface
 func (f *AT) SetFrameID(id byte) {
 	f.FrameID = id
 }
 
+// SetCommand satisfy CommandSetter interface
 func (f *AT) SetCommand(cmd [2]byte) {
 	copy(f.Cmd[:], cmd[:])
 }
 
+// SetParameter satisfy ParameterSetter interface
 func (f *AT) SetParameter(parameter []byte) {
 	f.Parameter = make([]byte, len(parameter))
 	copy(f.Parameter, parameter)
 }
 
-// Bytes turn AT frame into bytes
+// Bytes turn AT frame into bytes, satisfy Frame interface
 func (f *AT) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 

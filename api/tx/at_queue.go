@@ -21,20 +21,23 @@ type ATQueue struct {
 	Parameter []byte
 }
 
+// SetFrameID satisfy FrameIDSetter interface
 func (f *ATQueue) SetFrameID(id byte) {
 	f.FrameID = id
 }
 
+// SetCommand satisfy CommandSetter interface
 func (f *ATQueue) SetCommand(cmd [2]byte) {
 	copy(f.Cmd[:], cmd[:])
 }
 
+// SetParameter satisfy ParameterSetter interface
 func (f *ATQueue) SetParameter(parameter []byte) {
 	f.Parameter = make([]byte, len(parameter))
 	copy(f.Parameter, parameter)
 }
 
-// Bytes turn ATQueue frame into bytes
+// Bytes turn ATQueue frame into bytes, satisfy Frame interface
 func (f *ATQueue) Bytes() ([]byte, error) {
 	var b bytes.Buffer
 
