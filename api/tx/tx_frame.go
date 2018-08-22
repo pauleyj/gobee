@@ -155,11 +155,11 @@ func DstEP(dst byte) func(interface{}) {
 
 // ClusterIDSetter sets frame cluster ID
 type ClusterIDSetter interface {
-	SetClusterID(byte)
+	SetClusterID(uint16)
 }
 
 // ClusterID helper options function to set frame cluster ID
-func ClusterID(id byte) func(interface{}) {
+func ClusterID(id uint16) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(ClusterIDSetter); ok {
 			f.SetClusterID(id)
@@ -169,11 +169,11 @@ func ClusterID(id byte) func(interface{}) {
 
 // ProfileIDSetter sets frame profile ID
 type ProfileIDSetter interface {
-	SetProfileID(byte)
+	SetProfileID(uint16)
 }
 
 // ProfileID helper options function to set frame profile ID
-func ProfileID(id byte) func(interface{}) {
+func ProfileID(id uint16) func(interface{}) {
 	return func(i interface{}) {
 		if f, ok := i.(ProfileIDSetter); ok {
 			f.SetProfileID(id)

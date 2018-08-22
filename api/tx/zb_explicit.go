@@ -14,8 +14,8 @@ type ZBExplicit struct {
 	Addr16          uint16
 	SrcEP           byte
 	DstEP           byte
-	ClusterID       byte
-	ProfileID       byte
+	ClusterID       uint16
+	ProfileID       uint16
 	BroadcastRadius byte
 	Options         byte
 	Data            []byte
@@ -55,12 +55,12 @@ func (f *ZBExplicit) SetDstEP(dst byte) {
 }
 
 // SetClusterID satisfy ClusterIDSetter interface
-func (f *ZBExplicit) SetClusterID(id byte) {
+func (f *ZBExplicit) SetClusterID(id uint16) {
 	f.ClusterID = id
 }
 
 // SetProfileID satisfy ProfileIDSetter interface
-func (f *ZBExplicit) SetProfileID(id byte) {
+func (f *ZBExplicit) SetProfileID(id uint16) {
 	f.ProfileID = id
 }
 
@@ -90,8 +90,8 @@ func (f *ZBExplicit) Bytes() ([]byte, error) {
 	b.Write(util.Uint16ToBytes(f.Addr16))
 	b.WriteByte(f.SrcEP)
 	b.WriteByte(f.DstEP)
-	b.WriteByte(f.ClusterID)
-	b.WriteByte(f.ProfileID)
+	b.Write(util.Uint16ToBytes(f.ClusterID))
+	b.Write(util.Uint16ToBytes(f.ProfileID))
 	b.WriteByte(f.BroadcastRadius)
 	b.WriteByte(f.Options)
 
