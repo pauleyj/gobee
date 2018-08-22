@@ -1,11 +1,10 @@
-package gobee_test
+package gobee
 
 import (
 	"fmt"
 
 	"testing"
 
-	"github.com/pauleyj/gobee"
 	"github.com/pauleyj/gobee/api"
 	"github.com/pauleyj/gobee/api/rx"
 	"github.com/pauleyj/gobee/api/tx"
@@ -67,26 +66,26 @@ func (f *dummyFrame) Bytes() ([]byte, error) {
 
 type xbeeTXTest struct {
 	name     string
-	xbeeFunc func(*testing.T) *gobee.XBee
+	xbeeFunc func(*testing.T) *XBee
 	input    tx.Frame
 }
 
 var xbeeTXTests = []xbeeTXTest{
 	{
 		"TX",
-		func(t *testing.T) *gobee.XBee {
+		func(t *testing.T) *XBee {
 			tx := &Transmitter{t: t, expected: []byte{0x7e, 0x00, 0x04, 0x08, 0x01, 0x4e, 0x49, 0x5f}}
 			rx := &Receiver{t}
-			return gobee.New(tx, rx)
+			return New(tx, rx)
 		},
 		&dummyFrame{[]byte{0x08, 0x01, 0x4e, 0x49}},
 	},
 	{
 		"TX Escape",
-		func(t *testing.T) *gobee.XBee {
+		func(t *testing.T) *XBee {
 			tx := &Transmitter{t: t, expected: []byte{0x7e, 0x00, 0x04, 0x7d, 0x5e, 0x7d, 0x5d, 0x7d, 0x31, 0x7d, 0x33, 0xe0}}
 			rx := &Receiver{t}
-			return gobee.New(tx, rx, gobee.APIEscapeMode(api.EscapeModeActive))
+			return New(tx, rx, APIEscapeMode(api.EscapeModeActive))
 		},
 		&dummyFrame{[]byte{0x7e, 0x7d, 0x11, 0x13}},
 	},
@@ -118,7 +117,7 @@ type xbeeRXTest struct {
 func TestXBee_RX_AT(t *testing.T) {
 	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
+	xbee := New(transmitter, receiver)
 
 	// a valid AT command response
 	response := []byte{
@@ -141,7 +140,7 @@ func TestXBee_RX_AT(t *testing.T) {
 func TestXBee_RX_AT_Escape(t *testing.T) {
 	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver, gobee.APIEscapeMode(api.EscapeModeActive))
+	xbee := New(transmitter, receiver, APIEscapeMode(api.EscapeModeActive))
 
 	// a valid AT command response with escaped bytes
 	response := []byte{
@@ -160,7 +159,7 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 //func TestXBee_TX_Escape_Length(t *testing.T) {
 //	transmitter := &Transmitter{t: t}
 //	receiver := &Receiver{t: t}
-//	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
+//	xbee := NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
 //
 //	fakeParam := make([]byte, 0)
 //	for i := 0; i < 0x110D; i++ {
@@ -177,7 +176,7 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 //func TestXBee_TX_Escape_Checksum(t *testing.T) {
 //	transmitter := &Transmitter{t: t}
 //	receiver := &Receiver{t: t}
-//	xbee := gobee.NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
+//	xbee := NewWithEscapeMode(transmitter, receiver, api.EscapeModeActive)
 //
 //	atFrame := at.NewAT(at.FrameID(0x01), at.Command([2]byte{'A', 'O'}), at.Parameter([]byte{0xE8}))
 //	_, err := xbee.TX(atFrame)
@@ -189,7 +188,7 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 //func TestXBee_TX_Invalid_API_Mode(t *testing.T) {
 //	transmitter := &Transmitter{t: t}
 //	receiver := &Receiver{t: t}
-//	xbee := gobee.New(transmitter, receiver)
+//	xbee := New(transmitter, receiver)
 //
 //	err := xbee.SetAPIMode(api.EscapeMode(3))
 //	if err == nil {
@@ -200,7 +199,7 @@ func TestXBee_RX_AT_Escape(t *testing.T) {
 func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
 	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
+	xbee := New(transmitter, receiver)
 
 	unknownFrame := []byte{0x7E, 0x00, 0x10, 0xFF}
 
@@ -219,7 +218,7 @@ func TestXBee_Rx_Unknown_Frame_Type(t *testing.T) {
 func TestXBee_RX_Invalid_Frame_Delimiter(t *testing.T) {
 	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
+	xbee := New(transmitter, receiver)
 
 	err := xbee.RX(0x7D)
 	if err == nil {
@@ -230,7 +229,7 @@ func TestXBee_RX_Invalid_Frame_Delimiter(t *testing.T) {
 func TestXBee_RX_Invalid_Checksum(t *testing.T) {
 	transmitter := &Transmitter{t: t}
 	receiver := &Receiver{t: t}
-	xbee := gobee.New(transmitter, receiver)
+	xbee := New(transmitter, receiver)
 
 	bad_checksum := []byte{
 		0x7e, 0x00, 0x0f, 0x97, 0x02, 0x00, 0x13, 0xa2, 0x00,

@@ -5,7 +5,7 @@ const (
 )
 
 type ModemStatus struct {
-	Status byte
+	status byte
 }
 
 func newModemStatus() Frame {
@@ -14,7 +14,11 @@ func newModemStatus() Frame {
 
 
 func (f *ModemStatus) RX(b byte) error {
-	f.Status = b
+	f.status = b
 
 	return nil
+}
+
+func (f *ModemStatus) Status() byte {
+	return f.status
 }
