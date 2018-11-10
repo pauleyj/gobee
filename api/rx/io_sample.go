@@ -55,7 +55,7 @@ func (f *IOSample) AnalogSampleMask() byte {
 	return f.buffer[ioSampleAnalogSampleMaskOffset]
 }
 
-func (f *IOSample) DigigalSamples() uint16 {
+func (f *IOSample) DigitalSamples() uint16 {
 	return binary.BigEndian.Uint16(f.buffer[ioSampleDigitalSamplesOffset:ioSampleAnalogSampleOffset])
 }
 

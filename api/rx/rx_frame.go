@@ -80,3 +80,28 @@ type DeliveryGetter interface {
 type DiscoveryGetter interface {
 	Discovery() byte
 }
+
+// SampleCountGetter gets sample count
+type SampleCountGetter interface {
+	SampleCount() byte
+}
+
+// DigitalSampleMaskGetter gets digital sample mask
+type DigitalSampleMaskGetter interface {
+	DigitalSampleMask() uint16
+}
+
+// AnalogSampleMaskGetter gets analog sample mask
+type AnalogSampleMaskGetter interface {
+	AnalogSampleMask() byte
+}
+
+// DigitalSamplesGetter gets digital samples
+type DigitalSamplesGetter interface {
+	DigitalSamples() uint16
+}
+
+// AnalogSampleGetter gets analog sample
+type AnalogSampleGetter interface {
+	AnalogSample() uint16
+}

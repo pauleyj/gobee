@@ -16,7 +16,6 @@ func New(options ...func(interface{})) *APIFrame {
 		if option == nil {
 			continue
 		}
-
 		option(f)
 	}
 
@@ -36,7 +35,6 @@ func (f *APIFrame) SetAPIEscapeMode(mode api.EscapeMode) {
 
 // RX receive byte
 func (f *APIFrame) RX(c byte) (Frame, error) {
-	if f.mode == api.EscapeModeActive {
 		if f.shouldEscapeNext(c) {
 			return nil, nil
 		}
@@ -44,7 +42,6 @@ func (f *APIFrame) RX(c byte) (Frame, error) {
 		if f.state.escape {
 			c = f.escape(c)
 		}
-	}
 
 	return f.processRX(c)
 }
@@ -66,9 +63,9 @@ func (f *APIFrame) processRX(c byte) (Frame, error) {
 
 func (f *APIFrame) handleStateChecksum(c byte) (Frame, error) {
 	f.state.state = api.FrameStart
-	f.state.chechsum += c
+	f.state.checksum += c
 
-	if api.ValidChecksum != f.state.chechsum {
+	if api.ValidChecksum != f.state.checksum {
 		return nil, api.ErrChecksumValidation
 	}
 
@@ -82,7 +79,7 @@ func (f *APIFrame) handleStateFrame(c byte) error {
 		return err
 	}
 
-	f.state.chechsum += c
+	f.state.checksum += c
 	f.state.index++
 
 	if f.state.index == f.state.dataSize {
@@ -99,7 +96,7 @@ func (f *APIFrame) handleStateAPIID(c byte) error {
 		f.state.state = api.FrameStart
 		return err
 	}
-	f.state.chechsum += c
+	f.state.checksum += c
 	f.state.index++
 	f.state.state = api.FrameData
 
@@ -125,14 +122,14 @@ func (f *APIFrame) handleStateStart(c byte) error {
 	f.state.escape = false
 	f.state.index = 0
 	f.state.dataSize = 0
-	f.state.chechsum = 0
+	f.state.checksum = 0
 	f.state.state = api.FrameLength
 
 	return nil
 }
 
 func (f *APIFrame) shouldEscapeNext(c byte) bool {
-	if f.mode == api.EscapeModeInactive {
+	if f.mode != api.EscapeModeActive {
 		return false
 	}
 
@@ -162,5 +159,5 @@ type state struct {
 	escape   bool
 	index    uint16
 	dataSize uint16
-	chechsum uint8
+	checksum uint8
 }
