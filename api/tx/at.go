@@ -7,15 +7,9 @@ import (
 const atAPIID byte = 0x08
 
 func NewAT(options ...func(interface{})) *AT {
-	f := &AT{Cmd: [2]byte{'N', 'I'}}
+	f := &AT{Cmd: NI}
 
-	if options == nil {
-		return f
-	}
-
-	for _, option := range options {
-		option(f)
-	}
+	optionsRunner(f, options...)
 
 	return f
 }
