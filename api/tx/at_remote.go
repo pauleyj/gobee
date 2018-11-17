@@ -8,7 +8,7 @@ import (
 const atRemoteAPIID byte = 0x17
 
 func NewATRemote(options ...func(interface{})) *ATRemote {
-	f := &ATRemote{Addr64:0xFFFF, Addr16:0xFFFE, Cmd:[2]byte{'N','I'}}
+	f := &ATRemote{Addr64: 0xFFFF, Addr16: 0xFFFE, Cmd: NI}
 
 	optionsRunner(f, options...)
 
@@ -17,11 +17,11 @@ func NewATRemote(options ...func(interface{})) *ATRemote {
 
 // ATRemote AT remote transmit frame
 type ATRemote struct {
-	FrameID byte
-	Addr64 uint64
-	Addr16 uint16
-	Options byte
-	Cmd [2]byte
+	FrameID   byte
+	Addr64    uint64
+	Addr16    uint16
+	Options   byte
+	Cmd       [2]byte
 	Parameter []byte
 }
 

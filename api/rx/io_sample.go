@@ -48,7 +48,7 @@ func (f *IOSample) SampleCount() byte {
 }
 
 func (f *IOSample) DigitalSampleMask() uint16 {
-	return binary.BigEndian.Uint16(f.buffer[ioSampleDigitalSampleMaskOffset : ioSampleAnalogSampleMaskOffset])
+	return binary.BigEndian.Uint16(f.buffer[ioSampleDigitalSampleMaskOffset:ioSampleAnalogSampleMaskOffset])
 }
 
 func (f *IOSample) AnalogSampleMask() byte {

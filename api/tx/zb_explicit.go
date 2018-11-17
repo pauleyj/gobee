@@ -22,7 +22,7 @@ type ZBExplicit struct {
 }
 
 func NewZBExplicit(options ...func(interface{})) *ZBExplicit {
-	f := &ZBExplicit{Addr64:0xFFFF, Addr16:0xFFFE}
+	f := &ZBExplicit{Addr64: 0xFFFF, Addr16: 0xFFFE}
 
 	optionsRunner(f, options...)
 

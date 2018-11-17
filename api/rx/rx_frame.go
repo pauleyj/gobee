@@ -31,6 +31,7 @@ type Addr16Getter interface {
 type SrcEPGetter interface {
 	SrcEP() byte
 }
+
 // DstEPGetter getsdestination endpoint
 type DstEPGetter interface {
 	DstEP() byte

@@ -12,7 +12,6 @@ func newModemStatus() Frame {
 	return &ModemStatus{}
 }
 
-
 func (f *ModemStatus) RX(b byte) error {
 	f.status = b
 

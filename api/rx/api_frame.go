@@ -4,7 +4,6 @@ import (
 	"github.com/pauleyj/gobee/api"
 )
 
-
 func New(options ...func(interface{})) *APIFrame {
 	f := &APIFrame{}
 
@@ -35,13 +34,13 @@ func (f *APIFrame) SetAPIEscapeMode(mode api.EscapeMode) {
 
 // RX receive byte
 func (f *APIFrame) RX(c byte) (Frame, error) {
-		if f.shouldEscapeNext(c) {
-			return nil, nil
-		}
+	if f.shouldEscapeNext(c) {
+		return nil, nil
+	}
 
-		if f.state.escape {
-			c = f.escape(c)
-		}
+	if f.state.escape {
+		c = f.escape(c)
+	}
 
 	return f.processRX(c)
 }

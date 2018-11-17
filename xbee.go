@@ -27,7 +27,7 @@ func APIEscapeMode(mode api.EscapeMode) func(interface{}) {
 
 // New constructor of XBee's
 func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(interface{})) *XBee {
-	xbee :=  &XBee{
+	xbee := &XBee{
 		transmitter: transmitter,
 		receiver:    receiver,
 		frame:       rx.New(options...),
