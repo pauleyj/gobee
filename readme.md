@@ -45,9 +45,19 @@ xbee        := gobee.New(transmitter, receiver)
 ...
 ```
 
-#### Transmitting a Data Frame
+#### Transmitting an API Frame
 
-When sending a frame, construct frame using the appropriate frame builder and hand it to gobee to generate an API frame.  gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
+To send an API frame, construct the frame using an appropriate constructor and option functions to set frame parameters.  
+
+```golang
+frame  := tx.NewZB(
+			tx.FrameID(frameID),
+			tx.Addr64(api.BroadcastAddr64),
+			tx.Addr16(api.BroadcastAddr16),
+			tx.Data(frame.Data()))
+```
+
+gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
 
 ```golang
 at := tx.NewATBuilder().
@@ -97,7 +107,7 @@ for i := 0; i < n; i++ {
 Your implemented XBeeReceiver will get called when completed API frames are received.  gobee validates the received API frame and reports the data frame via the XBeeReceiver interface.
 
 ```golang
-func (r *Receiver) Receive(f rx.RxFrame) error {
+func (r *Receiver) Receive(f rx.Frame) error {
 	switch f.(type) {
 	case *rx.ZB:
 		// do something with received ZB frame

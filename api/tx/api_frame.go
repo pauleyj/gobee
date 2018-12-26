@@ -37,8 +37,7 @@ func (f *APIFrame) Bytes(frame Frame) ([]byte, error) {
 	b.WriteByte(api.FrameDelimiter)
 	b.Write(f.encode(util.Uint16ToBytes(uint16(len(p)))))
 	b.Write(f.encode(p))
-	c := checksum(p)
-	b.Write(f.encode([]byte{c}))
+	b.Write(f.encode([]byte{checksum(p)}))
 
 	return b.Bytes(), nil
 }
