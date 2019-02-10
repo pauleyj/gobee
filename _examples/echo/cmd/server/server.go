@@ -86,6 +86,8 @@ func (s *EchoServer) serve(xbee *gobee.XBee, ch <-chan rx.Frame) {
 			select {
 			case f := <-ch:
 				switch frame := f.(type) {
+				case *rx.AT:
+					fmt.Printf("Echo server received (AT Response): %s %#0.2x\n", string(f.(*rx.AT).Command()), f.(*rx.AT).Status())
 				case *rx.ZB:
 					fmt.Printf("Echo server received ZB message: '%s' from client: %#0.16x %#0.4x\n", string(frame.Data()), frame.Addr64(), frame.Addr16())
 					//
@@ -126,50 +128,8 @@ func (s *EchoServer) serve(xbee *gobee.XBee, ch <-chan rx.Frame) {
 			}
 		}
 	}()
-	//
-	// initialize API options and PAN network
-	//_, err := xbee.TX(tx.NewAT(
-	//	tx.FrameID(1),
-	//	tx.Command([2]byte{'F', 'R'}),
-	//	tx.Parameter([]byte{0x6c, 0x33, 0x33, 0x74})))
-	//if err != nil {
-	//	fmt.Printf("Failed to initiate software reset: %v", err)
-	//}
-	//
-	//<- time.After(5 * time.Second)
-	//
-	//_, err = xbee.TX(tx.NewAT(
-	//	tx.FrameID(1),
-	//	tx.Command([2]byte{'N', 'R'}),
-	//	tx.Parameter([]byte{0x6c, 0x33, 0x33, 0x74})))
-	//if err != nil {
-	//	fmt.Printf("Failed to initiate network reset: %v", err)
-	//}
-	//
-	//_, err = xbee.TX(tx.NewAT(
-	//	tx.FrameID(1),
-	//	tx.Command([2]byte{'I', 'I'}),
-	//	tx.Parameter([]byte{0x6c, 0x33, 0x33, 0x74})))
-	//if err != nil {
-	//	fmt.Printf("Failed to set the operating 16-bit PAN ID for the network: %v", err)
-	//}
 
-	_, err := xbee.TX(tx.NewAT(
-		tx.FrameID(1),
-		tx.Command([2]byte{'I', 'D'}),
-		tx.Parameter([]byte{0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64})))
-	if err != nil {
-		fmt.Printf("Failed to set the extended PAN ID for the network: %v", err)
-	}
-
-	_, err = xbee.TX(tx.NewAT(
-		tx.FrameID(1),
-		tx.Command([2]byte{'A', 'P'}),
-		tx.Parameter([]byte{0x01})))
-	if err != nil {
-		fmt.Printf("Failed to set the API mode: %v", err)
-	}
-
+	fmt.Println("server initialized")
 	<-s.done
 }
 

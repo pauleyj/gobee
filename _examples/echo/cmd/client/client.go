@@ -94,6 +94,8 @@ func (c *EchoClient) client(xbee *gobee.XBee, ch <-chan rx.Frame) {
 					fmt.Printf("Echo client received (TXS): %v\n", f.(*rx.TXStatus))
 				case *rx.ZB:
 					fmt.Printf("Echo client received (ZB): %s\n", string(f.(*rx.ZB).Data()))
+				case *rx.AT:
+					fmt.Printf("Echo client received (AT Response): %s %#0.2x\n", string(f.(*rx.AT).Command()), f.(*rx.AT).Status())
 				default:
 					fmt.Printf("Echo client received unhandled rx frame of type:%+v (%+v)\n", reflect.TypeOf(f), f)
 				}
@@ -102,34 +104,8 @@ func (c *EchoClient) client(xbee *gobee.XBee, ch <-chan rx.Frame) {
 			}
 		}
 	}()
-	//
-	// initialize API options and PAN network
-	_, err := xbee.TX(tx.NewAT(
-		tx.FrameID(1),
-		tx.Command([2]byte{'D', 'A'}),
-		tx.Parameter([]byte{0x6c, 0x33, 0x33, 0x74})))
-	if err != nil {
-		fmt.Printf("Failed to set the operating 16-bit PAN ID for the network: %v", err)
-	}
-
-	_, err = xbee.TX(tx.NewAT(
-		tx.FrameID(2),
-		tx.Command([2]byte{'I', 'D'}),
-		tx.Parameter([]byte{0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64})))
-	if err != nil {
-		fmt.Printf("Failed to set the extended PAN ID for the network: %v", err)
-	}
-
-	_, err = xbee.TX(tx.NewAT(
-		tx.FrameID(3),
-		tx.Command([2]byte{'A', 'P'}),
-		tx.Parameter([]byte{0x02})))
-	if err != nil {
-		fmt.Printf("Failed to set the API mode: %v", err)
-	}
 
 	fmt.Println("client initialized")
-
 	<-c.done
 
 }

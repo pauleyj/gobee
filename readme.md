@@ -5,15 +5,17 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/pauleyj/gobee)](https://goreportcard.com/report/github.com/pauleyj/gobee)
 [![codebeat badge](https://codebeat.co/badges/75f31b30-5397-4626-9118-9b599e088f44)](https://codebeat.co/projects/github-com-pauleyj-gobee)
 
-gobee, a library for enabling support of XBee series 2 and series 3 low power radios to your Go project.
+gobee, Golang a library for enabling support of XBee series 2 and series 3 low power radios to your Go project.
 
 ---
 
 ### Usage
 
-Implement the _XBeeTransmitter_ and _XBeeReceiver_ interfaces, instantiate an XBee, and start communicating, almost... It is up to the gobee user to configure and own the serial port the XBee is connected to and marshal data to/from it to gobee.
+Implement the _XBeeTransmitter_ and _XBeeReceiver_ interfaces, instantiate an XBee, and start communicating, almost... It is up to the gobee user to configure and own the serial port the XBee is connected to and marshal data to/from it.
 
 #### XBeeTransmitter
+
+gobee uses the XBeeTransmitter interface to request a byte slice be sent to the serial communications port the XBee is connected to.
 
 ```golang
 type XBeeTransmitter interface {
@@ -21,9 +23,9 @@ type XBeeTransmitter interface {
 }
 ```
 
-gobee uses the XBeeTransmitter interface to request a byte slice be sent to the serial communications port the XBee is connected to.
-
 #### XBeeReceiver
+
+gobee uses the XBeeReceiver interface to report received API frames.
 
 ```golang
 type XBeeReceiver interface {
@@ -31,52 +33,45 @@ type XBeeReceiver interface {
 }
 ```
 
-gobee uses the XBeeReceiver interface to report received API frames.
-
 #### XBee
 
-This the XBee widget used to communicate with the physical XBee.
+This is the XBee widget used to communicate with the physical XBee.
 
 ```golang
-...
 transmitter := &Transmitter{...}	// your XBeeTransmitter
 receiver    := &Receiver{...}		// your XBeeReceiver
 xbee        := gobee.New(transmitter, receiver)
-...
 ```
 
-#### Transmitting an API Frame
+#### Building and Transmitting an API Frame
 
-To send an API frame, construct the frame using an appropriate constructor and option functions to set frame parameters.  
+To send an API frame, construct the frame using an appropriate constructor and option functions to set frame parameters and then transmit the frame.
+
 
 ```golang
-frame  := tx.NewZB(
+// build the frame
+frame := tx.NewZB(
 			tx.FrameID(frameID),
 			tx.Addr64(api.BroadcastAddr64),
 			tx.Addr16(api.BroadcastAddr16),
-			tx.Data(frame.Data()))
+			tx.Data([]byte("Hello World!")))
+			
+// transmit the frame
+_, err := xbee.TX(frame)
+if err != nil {
+	// handle transmit error
+}
 ```
 
-gobee will then call the supplied Transmitters Transmit to send the bytes to the UART the XBee is connected to.
+gobee will call the supplied Transmitters Transmit function to send a fully formed API Frame to the UART the XBee is connected to.
 
-```golang
-at := tx.NewATBuilder().
-		ID(1).
-		Command([2]byte{'A','O'}).
-		Parameter(nil).
-		Build()
-_, err := xbee.TX(at)
-...
-```
 
 #### Sending API Frame to the UART
 
-When a frame is transmitted, gobee forms an appropriate API packet (see Transmitting a Frame) and sends it to your XBeeTransmitter for writing to the serial UART the XBee is connected to.
+When a frame is transmitted, gobee forms an appropriate API frame (see Building and Transmitting an API Frame) and sends it to your XBeeTransmitter for writing to the serial UART the XBee is connected to.
 
 ```golang
-...
 func (tx *Transmitter) Transmit(buffer []byte) (n int, err error) {
-
 	i, err := port.Write(buffer)
 	if err != nil {
 		fmt.Printf("Failed to write buffer to xbee comms: %v\n", err)
@@ -84,7 +79,6 @@ func (tx *Transmitter) Transmit(buffer []byte) (n int, err error) {
 
 	return i, err
 }
-...
 ```
 
 #### Receiving Data from the UART
@@ -92,14 +86,14 @@ func (tx *Transmitter) Transmit(buffer []byte) (n int, err error) {
 When data is received from the serial UART the XBee is connected to, send it to gobee.
 
 ```golang
-...
 n, err := port.Read(buffer)
-...
+if err != nil {
+	// handle receive error
+}
+
 for i := 0; i < n; i++ {
 	err = xbee.RX(buffer[i])
-	...
 }
-...
 ```
 
 #### Receiving Data Frames from gobee
@@ -111,7 +105,6 @@ func (r *Receiver) Receive(f rx.Frame) error {
 	switch f.(type) {
 	case *rx.ZB:
 		// do something with received ZB frame
-	...
 	}
 
 	return nil
