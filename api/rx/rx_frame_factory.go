@@ -6,19 +6,21 @@ import "errors"
 type FrameFactory func() Frame
 
 var (
-	errUnknownFrameAPIID = errors.New("Unknown frame API ID")
-	errFrameAPIIDExists  = errors.New("Frame factory for API ID already exists")
+	errUnknownFrameAPIID = errors.New("unknown frame API ID")
+	errFrameAPIIDExists  = errors.New("factory for API ID already exists")
 	rxFrameFactory       map[byte]FrameFactory
 )
 
 func init() {
 	rxFrameFactory = make(map[byte]FrameFactory)
-	// AT command response
+
 	rxFrameFactory[atAPIID] = newAT
 	rxFrameFactory[zbAPIID] = newZB
 	rxFrameFactory[txStatusAPIID] = newTXStatus
 	rxFrameFactory[zbExplicitAPIID] = newZBExplicit
 	rxFrameFactory[atRemoteAPIID] = newATRemote
+	rxFrameFactory[modemStatusAPIID] = newModemStatus
+	rxFrameFactory[ioSampleAPIID] = newIOSample
 }
 
 // NewFrameForAPIID creates an appropriate RxFrame for the given API ID
@@ -26,6 +28,7 @@ func NewFrameForAPIID(id byte) (Frame, error) {
 	if f, ok := rxFrameFactory[id]; ok {
 		return f(), nil
 	}
+
 	return nil, errUnknownFrameAPIID
 }
 
@@ -33,9 +36,8 @@ func NewFrameForAPIID(id byte) (Frame, error) {
 func AddFactoryForAPIID(id byte, factory FrameFactory) error {
 	if _, ok := rxFrameFactory[id]; !ok {
 		rxFrameFactory[id] = factory
-	} else {
-		return errFrameAPIIDExists
+		return nil
 	}
 
-	return nil
+	return errFrameAPIIDExists
 }

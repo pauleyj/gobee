@@ -2,88 +2,74 @@ package tx
 
 import (
 	"bytes"
+	"github.com/pauleyj/gobee/api/tx/util"
 )
 
 const zbAPIID byte = 0x10
 
-var _ Frame = (*ZB)(nil)
-
-// NewZBBuilder builder of ZB frames
-func NewZBBuilder() *zbID {
-	return &zbID{}
-}
-
-type zbID struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbID) ID(id byte) *zbAddr64 {
-	b.buffer.WriteByte(zbAPIID)
-	b.buffer.WriteByte(id)
-	return &zbAddr64{buffer: b.buffer}
-}
-
-type zbAddr64 struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbAddr64) Addr64(addr uint64) *zbAddr16 {
-	b.buffer.Write(uint64ToBytes(addr))
-	return &zbAddr16{buffer: b.buffer}
-}
-
-type zbAddr16 struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbAddr16) Addr16(addr uint16) *zbBroadcastRadius {
-	b.buffer.Write(uint16ToBytes(addr))
-	return &zbBroadcastRadius{buffer: b.buffer}
-}
-
-type zbBroadcastRadius struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbBroadcastRadius) BroadcastRadius(broadcastRadius byte) *zbOptions {
-	b.buffer.WriteByte(broadcastRadius)
-	return &zbOptions{buffer: b.buffer}
-}
-
-type zbOptions struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbOptions) Options(options byte) *zbData {
-	b.buffer.WriteByte(options)
-	return &zbData{buffer: b.buffer}
-}
-
-type zbData struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbData) Data(data []byte) *zbBuilder {
-	if len(data) > 0 {
-		b.buffer.Write(data)
-	}
-	return &zbBuilder{buffer: b.buffer}
-}
-
-type zbBuilder struct {
-	buffer bytes.Buffer
-}
-
-func (b *zbBuilder) Build() *ZB {
-	return &ZB{buffer: b.buffer}
-}
-
 // ZB transmit frame
 type ZB struct {
-	buffer bytes.Buffer
+	FrameID         byte
+	Addr64          uint64
+	Addr16          uint16
+	BroadcastRadius byte
+	Options         byte
+	Data            []byte
 }
 
-// Bytes turn ATRemote frame into bytes
+func NewZB(options ...func(interface{})) *ZB {
+	f := &ZB{Addr64: 0xFFFF, Addr16: 0xFFFE}
+
+	optionsRunner(f, options...)
+
+	return f
+}
+
+// SetFrameID satisfy FrameIDSetter interface
+func (f *ZB) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+// SetAddr64 satisfy Addr64Setter interface
+func (f *ZB) SetAddr64(addr uint64) {
+	f.Addr64 = addr
+}
+
+// SetAddr16 satisfy Addr16Setter interface
+func (f *ZB) SetAddr16(addr uint16) {
+	f.Addr16 = addr
+}
+
+// SetBroadcastRadius satisfy BroadcastRadiusSetter interface
+func (f *ZB) SetBroadcastRadius(hops byte) {
+	f.BroadcastRadius = hops
+}
+
+// SetOptions satisfy OptionsSetter interface
+func (f *ZB) SetOptions(options byte) {
+	f.Options = options
+}
+
+// SetData satisfy DataSetter interface
+func (f *ZB) SetData(data []byte) {
+	f.Data = make([]byte, len(data))
+	copy(f.Data, data)
+}
+
+// Bytes turn ZB frame into bytes, satisfy Frame interface
 func (f *ZB) Bytes() ([]byte, error) {
-	return f.buffer.Bytes(), nil
+	var b bytes.Buffer
+
+	b.WriteByte(zbAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(util.Uint64ToBytes(f.Addr64))
+	b.Write(util.Uint16ToBytes(f.Addr16))
+	b.WriteByte(f.BroadcastRadius)
+	b.WriteByte(f.Options)
+
+	if f.Data != nil && len(f.Data) > 0 {
+		b.Write(f.Data)
+	}
+
+	return b.Bytes(), nil
 }
