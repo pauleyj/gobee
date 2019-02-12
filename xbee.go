@@ -6,12 +6,6 @@ import (
 	"github.com/pauleyj/gobee/api/tx"
 )
 
-// BroadcastAddr64 64-bit broadcast address
-const BroadcastAddr64 uint64 = 0x000000000000FFFF
-
-// BroadcastAddr16 16-bit broadcast address
-const BroadcastAddr16 uint16 = 0xFFFE
-
 // XBeeTransmitter used to transmit API frame bytes to serial communications port
 type XBeeTransmitter interface {
 	Transmit([]byte) (int, error)
@@ -22,6 +16,38 @@ type XBeeReceiver interface {
 	Receive(rx.Frame) error
 }
 
+// APIEscapeMode helper option function to gobee.New
+func APIEscapeMode(mode api.EscapeMode) func(interface{}) {
+	return func(i interface{}) {
+		if t, ok := i.(api.APIEscapeModeSetter); ok {
+			t.SetAPIEscapeMode(mode)
+		}
+	}
+}
+
+// New constructor of XBee's
+func New(transmitter XBeeTransmitter, receiver XBeeReceiver, options ...func(interface{})) *XBee {
+	xbee := &XBee{
+		transmitter: transmitter,
+		receiver:    receiver,
+		frame:       rx.New(options...),
+	}
+
+	if options == nil || len(options) == 0 {
+		return xbee
+	}
+
+	for _, option := range options {
+		if option == nil {
+			continue
+		}
+
+		option(xbee)
+	}
+
+	return xbee
+}
+
 // XBee all the things
 type XBee struct {
 	transmitter XBeeTransmitter
@@ -30,24 +56,9 @@ type XBee struct {
 	frame       *rx.APIFrame
 }
 
-// New constructor of XBee's
-func New(transmitter XBeeTransmitter, receiver XBeeReceiver) *XBee {
-	return &XBee{
-		transmitter: transmitter,
-		receiver:    receiver,
-		apiMode:     api.EscapeModeInactive,
-		frame:       &rx.APIFrame{Mode: api.EscapeModeInactive},
-	}
-}
-
-// NewWithEscapeMode constructor of XBee's with a specific escape mode
-func NewWithEscapeMode(transmitter XBeeTransmitter, receiver XBeeReceiver, mode api.EscapeMode) *XBee {
-	return &XBee{
-		transmitter: transmitter,
-		receiver:    receiver,
-		apiMode:     mode,
-		frame:       &rx.APIFrame{Mode: mode},
-	}
+// SetAPIEscapeMode satisfy APIEscapeModeSetter interface
+func (x *XBee) SetAPIEscapeMode(mode api.EscapeMode) {
+	x.apiMode = mode
 }
 
 // RX bytes received from the serial communications port are sent here
@@ -67,20 +78,11 @@ func (x *XBee) RX(b byte) error {
 // TX transmit a frame to the XBee, forms an appropriate API frame for the frame being sent,
 // uses the XBeeTransmitter to send the API frame bytes to the serial communications port
 func (x *XBee) TX(frame tx.Frame) (int, error) {
-	f := &tx.APIFrame{Mode: x.apiMode}
+	f := tx.New(api.APIEscapeMode(x.apiMode))
 	p, err := f.Bytes(frame)
 	if err != nil {
 		return 0, err
 	}
 
 	return x.transmitter.Transmit(p)
-}
-
-// SetAPIMode sets the API mode so goobe knows to escape or not
-func (x *XBee) SetAPIMode(mode api.EscapeMode) error {
-	if mode != api.EscapeModeInactive && mode != api.EscapeModeActive {
-		return api.ErrInvalidAPIEscapeMode
-	}
-	x.apiMode = mode
-	return nil
 }

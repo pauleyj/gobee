@@ -2,88 +2,74 @@ package tx
 
 import (
 	"bytes"
+	"github.com/pauleyj/gobee/api/tx/util"
 )
 
 const atRemoteAPIID byte = 0x17
 
-var _ Frame = (*ATRemote)(nil)
+func NewATRemote(options ...func(interface{})) *ATRemote {
+	f := &ATRemote{Addr64: 0xFFFF, Addr16: 0xFFFE, Cmd: NI}
 
-// NewATRemoteBuilder builder of ATRemote frames
-func NewATRemoteBuilder() *atRemoteID {
-	return &atRemoteID{}
-}
+	optionsRunner(f, options...)
 
-type atRemoteID struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteID) ID(id byte) *atRemoteAddr64 {
-	b.buffer.WriteByte(atRemoteAPIID)
-	b.buffer.WriteByte(id)
-	return &atRemoteAddr64{buffer: b.buffer}
-}
-
-type atRemoteAddr64 struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteAddr64) Addr64(addr uint64) *atRemoteAddr16 {
-	b.buffer.Write(uint64ToBytes(addr))
-	return &atRemoteAddr16{buffer: b.buffer}
-}
-
-type atRemoteAddr16 struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteAddr16) Addr16(addr uint16) *atRemoteOptions {
-	b.buffer.Write(uint16ToBytes(addr))
-	return &atRemoteOptions{buffer: b.buffer}
-}
-
-type atRemoteOptions struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteOptions) Options(options byte) *atRemoteCommand {
-	b.buffer.WriteByte(options)
-	return &atRemoteCommand{buffer: b.buffer}
-}
-
-type atRemoteCommand struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteCommand) Command(command [2]byte) *atRemoteParameter {
-	b.buffer.Write(command[:])
-	return &atRemoteParameter{buffer: b.buffer}
-}
-
-type atRemoteParameter struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteParameter) Parameter(parameter *byte) *atRemoteBuilder {
-	if parameter != nil {
-		b.buffer.WriteByte(*parameter)
-	}
-	return &atRemoteBuilder{buffer: b.buffer}
-}
-
-type atRemoteBuilder struct {
-	buffer bytes.Buffer
-}
-
-func (b *atRemoteBuilder) Build() *ATRemote {
-	return &ATRemote{buffer: b.buffer}
+	return f
 }
 
 // ATRemote AT remote transmit frame
 type ATRemote struct {
-	buffer bytes.Buffer
+	FrameID   byte
+	Addr64    uint64
+	Addr16    uint16
+	Options   byte
+	Cmd       [2]byte
+	Parameter []byte
 }
 
-// Bytes turn ATRemote frame into bytes
+// SetFrameID satisfy FrameIDSetter interface
+func (f *ATRemote) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+// SetAddr64 satisfy Addr64Setter interface
+func (f *ATRemote) SetAddr64(addr uint64) {
+	f.Addr64 = addr
+}
+
+// SetAddr16 satisfy Addr16Setter interface
+func (f *ATRemote) SetAddr16(addr uint16) {
+	f.Addr16 = addr
+}
+
+// SetOptions satisfy OptionsSetter interface
+func (f *ATRemote) SetOptions(options byte) {
+	f.Options = options
+}
+
+// SetCommand satisfy CommandSetter interface
+func (f *ATRemote) SetCommand(cmd [2]byte) {
+	copy(f.Cmd[:], cmd[:])
+}
+
+// SetParameter satisfy ParameterSetter interface
+func (f *ATRemote) SetParameter(parameter []byte) {
+	f.Parameter = make([]byte, len(parameter))
+	copy(f.Parameter, parameter)
+}
+
+// Bytes turn ATRemote frame into bytes, satisfy Frame interface
 func (f *ATRemote) Bytes() ([]byte, error) {
-	return f.buffer.Bytes(), nil
+	var b bytes.Buffer
+
+	b.WriteByte(atRemoteAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(util.Uint64ToBytes(f.Addr64))
+	b.Write(util.Uint16ToBytes(f.Addr16))
+	b.WriteByte(f.Options)
+	b.Write(f.Cmd[:])
+
+	if f.Parameter != nil && len(f.Parameter) > 0 {
+		b.Write(f.Parameter)
+	}
+
+	return b.Bytes(), nil
 }

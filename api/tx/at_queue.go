@@ -6,57 +6,48 @@ import (
 
 const atQueueAPIID byte = 0x09
 
-var _ Frame = (*ATQueue)(nil)
+func NewATQueue(options ...func(interface{})) *ATQueue {
+	f := &ATQueue{}
 
-// NewATQueueBuilder builder of ATQueue frames
-func NewATQueueBuilder() *atQueueID {
-	return &atQueueID{}
+	optionsRunner(f, options...)
+
+	return f
 }
 
-type atQueueID struct {
-	buffer bytes.Buffer
-}
-
-func (b *atQueueID) ID(id byte) *atQueueCommand {
-	b.buffer.WriteByte(atQueueAPIID)
-	b.buffer.WriteByte(id)
-	return &atQueueCommand{buffer: b.buffer}
-}
-
-type atQueueCommand struct {
-	buffer bytes.Buffer
-}
-
-func (b *atQueueCommand) Command(command [2]byte) *atQueueParameter {
-	b.buffer.Write(command[:])
-	return &atQueueParameter{buffer: b.buffer}
-}
-
-type atQueueParameter struct {
-	buffer bytes.Buffer
-}
-
-func (b *atQueueParameter) Parameter(parameter *byte) *atQueueBuilder {
-	if parameter != nil {
-		b.buffer.WriteByte(*parameter)
-	}
-	return &atQueueBuilder{buffer: b.buffer}
-}
-
-type atQueueBuilder struct {
-	buffer bytes.Buffer
-}
-
-func (b *atQueueBuilder) Build() *ATQueue {
-	return &ATQueue{buffer: b.buffer}
-}
-
-// ATQueue AT queue transmit frame
+// ATQueue queue transmit frame
 type ATQueue struct {
-	buffer bytes.Buffer
+	FrameID   byte
+	Cmd       [2]byte
+	Parameter []byte
 }
 
-// Bytes turn AT frame into bytes
+// SetFrameID satisfy FrameIDSetter interface
+func (f *ATQueue) SetFrameID(id byte) {
+	f.FrameID = id
+}
+
+// SetCommand satisfy CommandSetter interface
+func (f *ATQueue) SetCommand(cmd [2]byte) {
+	copy(f.Cmd[:], cmd[:])
+}
+
+// SetParameter satisfy ParameterSetter interface
+func (f *ATQueue) SetParameter(parameter []byte) {
+	f.Parameter = make([]byte, len(parameter))
+	copy(f.Parameter, parameter)
+}
+
+// Bytes turn ATQueue frame into bytes, satisfy Frame interface
 func (f *ATQueue) Bytes() ([]byte, error) {
-	return f.buffer.Bytes(), nil
+	var b bytes.Buffer
+
+	b.WriteByte(atQueueAPIID)
+	b.WriteByte(f.FrameID)
+	b.Write(f.Cmd[:])
+
+	if f.Parameter != nil {
+		b.Write(f.Parameter)
+	}
+
+	return b.Bytes(), nil
 }
